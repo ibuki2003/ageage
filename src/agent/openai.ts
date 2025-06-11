@@ -3,6 +3,7 @@ import { AgentScheme, runCompletions, ToolCall } from "./types.ts";
 import { crayon } from "crayon";
 import { config } from "../config.ts";
 import { availableTools } from "./tools/index.ts";
+import * as log from "@std/log";
 
 function getToolsScheme(scheme: AgentScheme): OpenAI.Responses.FunctionTool[] {
   const tools: OpenAI.Responses.FunctionTool[] = [];
@@ -13,7 +14,7 @@ function getToolsScheme(scheme: AgentScheme): OpenAI.Responses.FunctionTool[] {
       const agent_scheme = agents[agent_name];
       if (!agent_scheme) {
         // throw new Error(`Agent scheme not found for ${agent_name}`);
-        console.warn(`Agent scheme not found for ${agent_name}`);
+        log.warn(`Agent scheme not found for ${agent_name}`);
         continue;
       }
       tools.push({
@@ -43,7 +44,7 @@ function getToolsScheme(scheme: AgentScheme): OpenAI.Responses.FunctionTool[] {
       const tool = availableTools[tool_name];
       if (!tool) {
         // throw new Error(`Tool not found: ${tool_name}`);
-        console.warn(`Tool not found: ${tool_name}`);
+        log.warn(`Tool not found: ${tool_name}`);
         continue;
       }
       tools.push({
@@ -79,6 +80,8 @@ export const adapter_openai: runCompletions = async (
   ];
 
   const tools = getToolsScheme(agent_scheme);
+
+  log.debug(`Using tools: ${tools.map((t) => t.name).join(", ")}`);
 
   while (true) {
     const res = await client.responses.create({
@@ -133,6 +136,8 @@ export const adapter_openai: runCompletions = async (
       }
     }
 
+    log.debug("Response received:", response);
+
     if (!response) {
       throw new Error("No response received from OpenAI");
     }
@@ -145,6 +150,7 @@ export const adapter_openai: runCompletions = async (
     for (const output of response.output) {
       if (output.type === "function_call") {
         const result = await tool_callback(output.name, output.arguments);
+        // log.debug(`Function call output for ${output.name}:`, result);
         input.push({
           type: "function_call_output",
           call_id: output.call_id,
@@ -156,6 +162,7 @@ export const adapter_openai: runCompletions = async (
     // Add user input if available
     const user_input = await get_user_input();
     if (user_input) {
+      log.debug("User input received:", user_input);
       input.push({
         type: "message",
         role: "user",

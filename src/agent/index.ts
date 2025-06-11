@@ -2,6 +2,7 @@ import { config } from "../config.ts";
 import { adapter_openai } from "./openai.ts";
 import { availableTools } from "./tools/index.ts";
 import { AgentScheme } from "./types.ts";
+import * as log from "@std/log";
 
 export async function runAgent(
   scheme: AgentScheme,
@@ -9,6 +10,8 @@ export async function runAgent(
   output_writer: (message: string) => void,
   get_user_input: () => Promise<string | null>,
 ): Promise<string> {
+  log.debug(`Running agent with input: ${input}`);
+
   return await adapter_openai(
     scheme,
     input,
@@ -25,6 +28,8 @@ const routeToolCall = async (
   output_writer: (message: string) => void,
   get_user_input: () => Promise<string | null>,
 ): Promise<string> => {
+  log.debug(`Routing tool call: ${tool} with args: ${args}`);
+
   if (tool in availableTools) {
     // Call a tool
     const toolCall = availableTools[tool];
@@ -42,6 +47,6 @@ const routeToolCall = async (
     );
   }
 
-  console.warn(`Trying to call unknown tool or agent: ${tool}`);
+  log.warn(`Trying to call unknown tool or agent: ${tool}`);
   return JSON.stringify({ "error": "Tool or agent not found" });
 };
