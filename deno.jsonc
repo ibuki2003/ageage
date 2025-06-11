@@ -13,4 +13,7 @@
       "npm:@types/react",
     ],
   },
+  "fmt": {
+    "include": ["src/"],
+  },
 }
