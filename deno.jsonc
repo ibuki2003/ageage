@@ -5,5 +5,12 @@
   "imports": {
     "@std/assert": "jsr:@std/assert@1",
     "crayon": "https://deno.land/x/crayon@3.3.3/mod.ts",
-  }
+    "ink": "npm:ink@^6.0.0",
+    "react": "npm:react@^19.1.0",
+  },
+  "compilerOptions": {
+    "types": [
+      "npm:@types/react",
+    ],
+  },
 }
