@@ -3,7 +3,9 @@
     "dev": "deno run -A --watch main.ts",
   },
   "imports": {
+    "@openai/openai": "jsr:@openai/openai@^4.102.0",
     "@std/assert": "jsr:@std/assert@1",
+    "@std/log": "jsr:@std/log@^0.224.14",
     "crayon": "https://deno.land/x/crayon@3.3.3/mod.ts",
     "ink": "npm:ink@^6.0.0",
     "react": "npm:react@^19.1.0",

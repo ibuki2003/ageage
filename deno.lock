@@ -1,8 +1,50 @@
 {
   "version": "4",
   "specifiers": {
+    "jsr:@openai/openai@^4.102.0": "4.102.0",
+    "jsr:@std/assert@1": "1.0.13",
+    "jsr:@std/fmt@^1.0.5": "1.0.8",
+    "jsr:@std/fs@^1.0.11": "1.0.18",
+    "jsr:@std/internal@^1.0.6": "1.0.8",
+    "jsr:@std/io@~0.225.2": "0.225.2",
+    "jsr:@std/log@~0.224.14": "0.224.14",
     "npm:ink@6": "6.0.0_react@19.1.0",
-    "npm:react@^19.1.0": "19.1.0"
+    "npm:react@^19.1.0": "19.1.0",
+    "npm:zod@3": "3.25.61"
+  },
+  "jsr": {
+    "@openai/openai@4.102.0": {
+      "integrity": "ea5201bc5c8a696d3a5139a9cd2252e3ab9b2b880769a9cd7f05602ea1a02acf",
+      "dependencies": [
+        "npm:zod"
+      ]
+    },
+    "@std/assert@1.0.13": {
+      "integrity": "ae0d31e41919b12c656c742b22522c32fb26ed0cba32975cb0de2a273cb68b29",
+      "dependencies": [
+        "jsr:@std/internal"
+      ]
+    },
+    "@std/fmt@1.0.8": {
+      "integrity": "71e1fc498787e4434d213647a6e43e794af4fd393ef8f52062246e06f7e372b7"
+    },
+    "@std/fs@1.0.18": {
+      "integrity": "24bcad99eab1af4fde75e05da6e9ed0e0dce5edb71b7e34baacf86ffe3969f3a"
+    },
+    "@std/internal@1.0.8": {
+      "integrity": "fc66e846d8d38a47cffd274d80d2ca3f0de71040f855783724bb6b87f60891f5"
+    },
+    "@std/io@0.225.2": {
+      "integrity": "3c740cd4ee4c082e6cfc86458f47e2ab7cb353dc6234d5e9b1f91a2de5f4d6c7"
+    },
+    "@std/log@0.224.14": {
+      "integrity": "257f7adceee3b53bb2bc86c7242e7d1bc59729e57d4981c4a7e5b876c808f05e",
+      "dependencies": [
+        "jsr:@std/fmt",
+        "jsr:@std/fs",
+        "jsr:@std/io"
+      ]
+    }
   },
   "npm": {
     "@alcalzone/ansi-tokenize@0.1.3": {
@@ -221,6 +263,9 @@
     },
     "yoga-layout@3.2.1": {
       "integrity": "sha512-0LPOt3AxKqMdFBZA3HBAt/t/8vIKq7VaQYbuA8WxCgung+p9TVyKRYdpvCb80HcdTN2NkbIKbhNwKUfm3tQywQ=="
+    },
+    "zod@3.25.61": {
+      "integrity": "sha512-fzfJgUw78LTNnHujj9re1Ov/JJQkRZZGDMcYqSx7Hp4rPOkKywaFHq0S6GoHeXs0wGNE/sIOutkXgnwzrVOGCQ=="
     }
   },
   "remote": {
@@ -232,7 +277,9 @@
   },
   "workspace": {
     "dependencies": [
+      "jsr:@openai/openai@^4.102.0",
       "jsr:@std/assert@1",
+      "jsr:@std/log@~0.224.14",
       "npm:@types/react@*",
       "npm:ink@6",
       "npm:react@^19.1.0"
