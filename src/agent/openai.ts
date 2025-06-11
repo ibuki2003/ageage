@@ -60,7 +60,7 @@ function getToolsScheme(scheme: AgentScheme): OpenAI.Responses.FunctionTool[] {
   return tools;
 }
 
-const client = new OpenAI({
+export const client = new OpenAI({
   apiKey: Deno.env.get("OPENAI_API_KEY") || "",
 });
 
@@ -171,6 +171,9 @@ export const adapter_openai: runCompletions = async (
     }
 
     if (input.length === 0) {
+      // finally, print a separator line
+      output_writer(crayon.dim.white("--------------------------------------------------\n"));
+
       // No more input, we can return the final output
       return response.output.filter((o) => o.type === "message").flatMap((o) =>
         o.content.filter((c) => c.type == "output_text")
