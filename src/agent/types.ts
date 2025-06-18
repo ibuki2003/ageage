@@ -1,4 +1,5 @@
 import { ModelSpec } from "../config.ts";
+import Printer from "../output.ts";
 
 export interface AgentScheme {
   model: ModelSpec;
@@ -12,8 +13,7 @@ export type ToolCall = (tool: string, args: string) => Promise<string>;
 
 export type runCompletions = (
   agent_scheme: AgentScheme,
-  prompt: string,
+  input: string | AsyncGenerator<string>,
   tool_callback: ToolCall,
-  output_writer: (message: string) => void,
-  get_user_input: () => Promise<string | null>,
+  printer: Printer,
 ) => Promise<string>;

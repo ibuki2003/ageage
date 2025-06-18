@@ -1,3 +1,4 @@
+import Printer from "../../output.ts";
 import coder from "./coder.ts";
 import find from "./find.ts";
 import read_file from "./read_file.ts";
@@ -18,7 +19,7 @@ export const calc_parameters_schema = {
 export type ToolDefinition = {
   schema: Record<string, unknown>;
   description: string;
-  call: (args: string) => Promise<string>;
+  call: (args: string, printer?: Printer) => Promise<string>;
 };
 
 export const availableTools: Record<string, ToolDefinition> = {

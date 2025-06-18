@@ -1,9 +1,10 @@
 import OpenAI from "@openai/openai";
-import { AgentScheme, runCompletions, ToolCall } from "./types.ts";
+import { AgentScheme, runCompletions } from "./types.ts";
 import { crayon } from "crayon";
 import { config } from "../config.ts";
 import { availableTools } from "./tools/index.ts";
 import * as log from "@std/log";
+import { client, get_output_text, print_delta } from "../adapters/openai.ts";
 
 function getToolsScheme(scheme: AgentScheme): OpenAI.Responses.FunctionTool[] {
   const tools: OpenAI.Responses.FunctionTool[] = [];
@@ -60,23 +61,21 @@ function getToolsScheme(scheme: AgentScheme): OpenAI.Responses.FunctionTool[] {
   return tools;
 }
 
-export const client = new OpenAI({
-  apiKey: Deno.env.get("OPENAI_API_KEY") || "",
-});
-
 export const adapter_openai: runCompletions = async (
   agent_scheme,
-  prompt,
+  input,
   tool_callback,
-  output_writer,
-  get_user_input,
+  printer,
 ) => {
   const modelspec = agent_scheme.model;
 
   let last_id: string = "";
 
-  let input: OpenAI.Responses.ResponseInput = [
-    { role: "user", type: "message", content: prompt },
+  const first_input = typeof input === "string" ? input : (await input.next()).value;
+  const input_iter = typeof input === "string" ? null : input;
+
+  let reqinput: OpenAI.Responses.ResponseInput = [
+    { role: "user", type: "message", content: first_input },
   ];
 
   const tools = getToolsScheme(agent_scheme);
@@ -86,7 +85,7 @@ export const adapter_openai: runCompletions = async (
   while (true) {
     const res = await client.responses.create({
       previous_response_id: last_id || null,
-      input,
+      input: reqinput,
       instructions: agent_scheme.prompt,
       stream: true,
       store: true,
@@ -104,31 +103,8 @@ export const adapter_openai: runCompletions = async (
     let response: OpenAI.Responses.Response | null = null;
 
     for await (const chunk of res) {
+      await print_delta(chunk, printer);
       switch (chunk.type) {
-        // output text
-        case "response.output_text.delta": {
-          output_writer(crayon.blue(chunk.delta));
-          break;
-        }
-        case "response.output_text.done": {
-          output_writer("\n");
-          break;
-        }
-
-        // reasoning
-        case "response.reasoning.delta":
-        case "response.reasoning_summary.delta":
-        case "response.reasoning_summary_text.delta": {
-          output_writer(crayon.yellow(chunk.delta));
-          break;
-        }
-        case "response.reasoning.done":
-        case "response.reasoning_summary.done":
-        case "response.reasoning_summary_text.done": {
-          output_writer("\n");
-          break;
-        }
-
         case "response.completed": {
           response = chunk.response;
           break;
@@ -136,7 +112,7 @@ export const adapter_openai: runCompletions = async (
       }
     }
 
-    log.debug("Response received:", response);
+    // log.debug("Response received:", response?.output);
 
     if (!response) {
       throw new Error("No response received from OpenAI");
@@ -144,14 +120,14 @@ export const adapter_openai: runCompletions = async (
 
     last_id = response.id;
 
-    input = [];
+    reqinput = [];
 
     // Process function calls from the response
     for (const output of response.output) {
       if (output.type === "function_call") {
         const result = await tool_callback(output.name, output.arguments);
         // log.debug(`Function call output for ${output.name}:`, result);
-        input.push({
+        reqinput.push({
           type: "function_call_output",
           call_id: output.call_id,
           output: result,
@@ -160,24 +136,23 @@ export const adapter_openai: runCompletions = async (
     }
 
     // Add user input if available
-    const user_input = await get_user_input();
-    if (user_input) {
-      log.debug("User input received:", user_input);
-      input.push({
+    const user_input = await (input_iter?.next());
+    if (user_input && user_input.value) {
+      const inp = user_input.value;
+      log.debug("User input received:", inp);
+      reqinput.push({
         type: "message",
         role: "user",
-        content: user_input,
+        content: inp,
       });
     }
 
-    if (input.length === 0) {
+    if (reqinput.length === 0) {
       // finally, print a separator line
-      output_writer(crayon.dim.white("--------------------------------------------------\n"));
+      await printer.write("--------------------------------------------------\n", crayon.white.dim);
 
       // No more input, we can return the final output
-      return response.output.filter((o) => o.type === "message").flatMap((o) =>
-        o.content.filter((c) => c.type == "output_text")
-      ).map((c) => c.text).join("\n");
+      return get_output_text(response);
     }
 
     // Otherwise, we continue the loop

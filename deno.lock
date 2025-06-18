@@ -3,11 +3,13 @@
   "specifiers": {
     "jsr:@openai/openai@^4.102.0": "4.102.0",
     "jsr:@std/assert@1": "1.0.13",
+    "jsr:@std/bytes@^1.0.6": "1.0.6",
     "jsr:@std/fmt@^1.0.5": "1.0.8",
     "jsr:@std/fs@^1.0.11": "1.0.18",
     "jsr:@std/internal@^1.0.6": "1.0.8",
     "jsr:@std/io@~0.225.2": "0.225.2",
     "jsr:@std/log@~0.224.14": "0.224.14",
+    "jsr:@std/streams@^1.0.10": "1.0.10",
     "jsr:@std/yaml@^1.0.8": "1.0.8",
     "npm:@types/react@*": "19.1.7",
     "npm:zod@3": "3.25.61"
@@ -24,6 +26,9 @@
       "dependencies": [
         "jsr:@std/internal"
       ]
+    },
+    "@std/bytes@1.0.6": {
+      "integrity": "f6ac6adbd8ccd99314045f5703e23af0a68d7f7e58364b47d2c7f408aeb5820a"
     },
     "@std/fmt@1.0.8": {
       "integrity": "71e1fc498787e4434d213647a6e43e794af4fd393ef8f52062246e06f7e372b7"
@@ -43,6 +48,12 @@
         "jsr:@std/fmt",
         "jsr:@std/fs",
         "jsr:@std/io"
+      ]
+    },
+    "@std/streams@1.0.10": {
+      "integrity": "75c0b1431873cd0d8b3d679015220204d36d3c7420d93b60acfc379eb0dc30af",
+      "dependencies": [
+        "jsr:@std/bytes"
       ]
     },
     "@std/yaml@1.0.8": {
@@ -75,6 +86,7 @@
       "jsr:@openai/openai@^4.102.0",
       "jsr:@std/assert@1",
       "jsr:@std/log@~0.224.14",
+      "jsr:@std/streams@^1.0.10",
       "jsr:@std/yaml@^1.0.8",
       "npm:@types/react@*"
     ]

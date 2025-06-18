@@ -2,9 +2,11 @@
 
 import { OpenAI } from "@openai/openai";
 import { config, ModelSpec } from "../../config.ts";
-import { client } from "../openai.ts";
 import { ToolDefinition } from "./index.ts";
 import * as log from "@std/log";
+import { client, get_output_text, print_delta } from "../../adapters/openai.ts";
+import Printer from "../../output.ts";
+import { crayon } from "crayon";
 
 export type CoderEditFormat = "whole" | "diff";
 
@@ -38,7 +40,7 @@ export const coder_parameters_schema = {
   additionalProperties: false,
 };
 
-export async function coder_call(args: string): Promise<string> {
+export async function coder_call(args: string, printer?: Printer): Promise<string> {
   try {
     const { target_files, request } = JSON.parse(args);
     if (!Array.isArray(target_files) || target_files.length === 0) {
@@ -71,7 +73,7 @@ export async function coder_call(args: string): Promise<string> {
         { role: "user", content: request },
       ],
       instructions: config.tools.builtin.coder.prompt,
-      stream: false,
+      stream: true,
       store: true,
       parallel_tool_calls: false,
 
@@ -82,8 +84,26 @@ export async function coder_call(args: string): Promise<string> {
         : null,
     });
 
-    const output_text = res.output_text;
-    console.log(output_text);
+    let response = null;
+
+    for await (const chunk of res) {
+      printer && await print_delta(chunk, printer, {
+        output: crayon.white,
+        reasoning: crayon.white.dim,
+      });
+      switch (chunk.type) {
+        case "response.completed": {
+          response = chunk.response;
+          break;
+        }
+      }
+    }
+
+    if (!response) {
+      throw new Error("No response received from OpenAI");
+    }
+
+    const output_text = get_output_text(response);
 
     const edit_lines: Record<string, { add: number; remove: number }> = {};
     let success_count = 0;
@@ -92,9 +112,10 @@ export async function coder_call(args: string): Promise<string> {
     // apply changes to target files based on edit blocks in output_text
     for (const { file, search, replace: replacement } of iterate_edit_blocks(output_text)) {
       log.info(`Applying edit to file: ${file}`);
+      printer && await printer.write(`Applying edit to file: ${file}\n`, crayon.green.bold);
       try {
         if (!target_files.includes(file)) {
-          console.warn(`File ${file} is not in target_files, skipping.`);
+          printer && await printer.write(`File ${file} is not in target_files, skipping.\n`, crayon.red.bold);
           failure_count++;
           continue;
         }
@@ -108,7 +129,7 @@ export async function coder_call(args: string): Promise<string> {
             }
             edit_lines[file].add += replacement.split(/\r?\n/).length;
           } else {
-            console.warn(`File ${file} does not exist, but search text is not empty, skipping.`);
+            printer && await printer.write(`File ${file} does not exist, but search text is not empty, skipping.\n`, crayon.red.bold);
             failure_count++;
           }
           continue;
@@ -116,7 +137,7 @@ export async function coder_call(args: string): Promise<string> {
           const content = await Deno.readTextFile(file);
           const index = content.indexOf(search);
           if (index === -1) {
-            console.warn(`Search text not found in ${file}, skipping.`);
+            printer && await printer.write(`Search text not found in ${file}, skipping.\n`, crayon.red.bold);
             failure_count++;
             continue;
           } else {
@@ -133,10 +154,9 @@ export async function coder_call(args: string): Promise<string> {
           edit_lines[file].remove += search.split(/\r?\n/).length;;
         }
       } catch (e) {
-        console.error(`Error applying edits to ${file}: ${e}`);
+        printer && await printer.write(`Error applying edits to ${file}: ${e}\n`, crayon.red.bold);
       }
     }
-
 
     return `${success_count} changes applied successfully, ${failure_count} changes failed.\n\n` +
       `Changes made:\n` +
