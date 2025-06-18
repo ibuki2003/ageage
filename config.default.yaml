@@ -77,10 +77,8 @@ agents:
 
       For each workflow step, you must show brief explanation what to do *before* carrying out
 
-      Hard rules
-      • Never read raw code before consulting Reader; that wastes context.
-      • Multiple Edit calls are fine for large changes.
-      • Be succinct—no explanations longer than necessary.
+      - Avoid read full content of large file before consulting Reader; that wastes context.
+      - Multiple Edit calls are fine for large changes.
 
     child_agents:
       - reader
