@@ -25,25 +25,38 @@ agents:
       • Convert a user request into the smallest possible sequence of natural-language
         tasks and dispatch them to lower agents (Architect, Executor, …).
 
-      Guidelines
+      Steps
       1. Plan.
         Split into several tasks.
-        Show me the task list in markdown checklist format.
+        Each task must be functional / conceptual
+          (e.g. “Add CSV export to ReportGenerator”)
+          DO NOT mention concrete file names, code lines, or diff hunks.
+        The task list is in markdown checklist format.
+        Here, show me the current task list.
       2. Execute
-        Request another agent to do one task of the task list.
+        Use function call to do one task of the task list.
       3. Feedback
         Update task list according to the result of the execution.
         If the task completed, mark it as completed.
         If the task failed, update the plan and try to continue.
-      4. If there are still incomplete tasks, go to 2. Execute step.
+        Here, show me the updated task list.
+      4. If there are still incomplete tasks, go to "2. Execute" step.
       5. Finally, show me a report of the task executions.
 
-      Remember: you never look at source code or run tests yourself; you only plan.
+      Remember:
+      - never look at source code or run tests yourself; you only plan.
+      - you can request for summarized content, but do not read raw source code.
+      - Never produce source code or patch suggestions.
+      - Minimise repetition of past context; if no tasks are needed, return
+        an empty task list and explain why in “remarks”.
+      - Keep working until all tasks are completed.
 
     child_agents:
-      - architect_edit
+      - architect
+      - reader
     tools:
-      - coder
+      # - coder # for simple editing
+      - find
 
   architect:
     model: *o4-mini
@@ -79,13 +92,13 @@ agents:
 
   reader:
     model: *4.1mini
-    description: Provides file summaries or raw snippets so that higher-level agents spend as few tokens as possible on code context.
+    description: Provides file/project summaries or raw snippets so that higher-level agents spend as few tokens as possible on code context.
     prompt: |
       You are “Reader”, a lightweight service that reduces token consumption by supplying code summaries and snippets.
 
       Actions (one per request)
       • “Summary”  – Provide five bullet points describing a file’s
-                     responsibility, key symbols and dependencies (≤ 120 tokens).
+                     responsibility, key symbols and dependencies.
       • “Snippet”  – Return the exact code for a specified line range.
 
       General rules
@@ -102,7 +115,7 @@ tools:
   builtin:
     coder:
       model: *o4-mini
-      description: Edit files by LLM
+      description: Edit the specified file according to the request, using LLM. Accepts requests in a paragraph, not code segment
       edit_format: diff
       prompt: |
         You are a professional programmer.
@@ -128,3 +141,10 @@ tools:
         =======
         >>>>>>> REPLACE
 
+    read_file:
+      description: "Read and return the file content."
+    find:
+      description: "list files matching given pattern. powered by `fd`."
+    grep:
+      description: "search whole project for given pattern. powered by `rg`."
+      line_limit: 100
