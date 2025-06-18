@@ -20,6 +20,10 @@ export interface Config {
       coder: CoderToolConfig;
       read_file: { description: string; };
       find: { description: string; };
+      grep: {
+        description: string;
+        line_limit: number;
+      };
     };
   };
 }
@@ -38,6 +42,7 @@ export const config: Config = {
       },
       read_file: { description: "" },
       find: { description: "" },
+      grep: { description: "", line_limit: 0 },
     },
   },
 };

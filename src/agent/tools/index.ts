@@ -1,6 +1,7 @@
 import Printer from "../../output.ts";
 import coder from "./coder.ts";
 import find from "./find.ts";
+import grep from "./grep.ts";
 import read_file from "./read_file.ts";
 
 export const calc_parameters_schema = {
@@ -39,4 +40,5 @@ export const availableTools: Record<string, ToolDefinition> = {
   coder,
   read_file,
   find,
+  grep,
 };
