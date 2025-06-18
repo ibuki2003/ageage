@@ -71,16 +71,26 @@ export const adapter_openai: runCompletions = async (
 
   let last_id: string = "";
 
-  const first_input = typeof input === "string" ? input : (await input.next()).value;
+  const tools = getToolsScheme(agent_scheme);
+
+  log.debug(`Using tools: ${tools.map((t) => t.name).join(", ")}`);
+
+
+  const first_input = typeof input === "string" ? input : await (async () => {
+    const l = await input.next();
+    if (l.done) { return null; }
+    return l.value;
+  })();
+  if (!first_input) {
+    // throw new Error("No input provided to the agent");
+    log.warn("No input provided to the agent");
+    return "";
+  }
   const input_iter = typeof input === "string" ? null : input;
 
   let reqinput: OpenAI.Responses.ResponseInput = [
     { role: "user", type: "message", content: first_input },
   ];
-
-  const tools = getToolsScheme(agent_scheme);
-
-  log.debug(`Using tools: ${tools.map((t) => t.name).join(", ")}`);
 
   while (true) {
     const res = await client.responses.create({
@@ -99,6 +109,7 @@ export const adapter_openai: runCompletions = async (
         ? { effort: modelspec.reasoning as OpenAI.ReasoningEffort }
         : null,
     });
+    printer.write(`Request sent...\n`, crayon.white.dim);
 
     let response: OpenAI.Responses.Response | null = null;
 
@@ -136,18 +147,22 @@ export const adapter_openai: runCompletions = async (
     }
 
     // Add user input if available
-    const user_input = await (input_iter?.next());
-    if (user_input && user_input.value) {
-      const inp = user_input.value;
-      log.debug("User input received:", inp);
-      reqinput.push({
-        type: "message",
-        role: "user",
-        content: inp,
-      });
+    // if other input is provided, we can skip waiting for user input
+    if (reqinput.length == 0 && input_iter) {
+      await printer.write("Waiting for user input...\n", crayon.white.dim);
+      const user_input = await input_iter?.next();
+      if (user_input.value) {
+        const inp = user_input.value;
+        log.debug("User input received:", inp);
+        reqinput.push({
+          type: "message",
+          role: "user",
+          content: inp,
+        });
+      }
     }
 
-    if (reqinput.length === 0) {
+    if (reqinput.length === 0 && !input_iter) {
       // finally, print a separator line
       await printer.write("--------------------------------------------------\n", crayon.white.dim);
 
