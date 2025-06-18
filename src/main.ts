@@ -1,4 +1,3 @@
-import { crayon } from "crayon";
 import { runAgent } from "./agent/index.ts";
 import { config, loadConfig } from "./config.ts";
 import { setupLogger } from "./logger.ts";
@@ -6,15 +5,15 @@ import Printer from "./output.ts";
 import { TextLineStream } from '@std/streams'
 import { load } from "@std/dotenv";
 import { setApiKey } from "./adapters/openai.ts";
+import { parseArgs } from "@std/cli/parse-args";
+
+const VERSION = "0.0.1";
 
 const HOME = Deno.env.get("HOME") || Deno.env.get("USERPROFILE");
 if (!HOME) {
   throw new Error("HOME environment variable is not set. Please set it to your home directory.");
 }
 const CONFIG_HOME = (Deno.env.get("XDG_CONFIG_HOME") || `${HOME}/.config`) + "/ageage";
-if (!Deno.env.get("XDG_CONFIG_HOME")) {
-  console.warn(`Warning: XDG_CONFIG_HOME is not set. Using default: ${CONFIG_HOME}`);
-}
 
 {
   const stat = await Deno.stat(CONFIG_HOME).catch(() => null);
@@ -30,6 +29,11 @@ if (!Deno.env.get("XDG_CONFIG_HOME")) {
 async function main() {
   setupLogger();
 
+  const args = parseArgs(Deno.args, {
+    boolean: ["help", "version"],
+    string: ["config", "agent"],
+  });
+
   for (const path of [ CONFIG_HOME + "/.env", "./.env" ]) {
     try {
       await load({ export: true, envPath: path });
@@ -43,11 +47,35 @@ async function main() {
   await loadConfig([
     CONFIG_HOME + "/config.yaml",
     "./config.yaml",
+    ...(args.config ? [args.config] : []),
   ]);
 
-  console.log(crayon.green("Hello, world!"));
+  if (args.help) {
+    console.log(`
+Usage: ageage [options] [input_text]
+Options:
+  --help          Show this help message
+  --version       Show version information
+  --config <file> Specify a custom config file
+  --agent <name>  Specify an agent to use (default: ${config.default_agent})
+`);
+    Deno.exit(0);
+  }
+  if (args.version) {
+    console.log(`ageage version ${VERSION}`);
+    Deno.exit(0);
+  }
 
+  const is_tty = Deno.stdin.isTerminal();
+  const input_text_arg = args._.join(" ").trim();
   const stdin_reader = async function* () {
+    if (input_text_arg) {
+      yield input_text_arg;
+    }
+    if (!is_tty) {
+      return;
+    }
+
     const stream = Deno.stdin.readable.pipeThrough(new TextDecoderStream()).pipeThrough(new TextLineStream());
 
     for await (const line of stream) {
@@ -57,7 +85,11 @@ async function main() {
 
   const printer = new Printer(0);
 
-  const agent = config.agents[config.default_agent];
+  if (args.agent && !(args.agent in config.agents)) {
+    console.error(`Error: Agent "${args.agent}" not found in config.`);
+    Deno.exit(1);
+  }
+  const agent = config.agents[args.agent || config.default_agent];
 
   await runAgent(agent, stdin_reader, printer);
 }

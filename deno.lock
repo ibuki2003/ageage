@@ -4,6 +4,7 @@
     "jsr:@openai/openai@^4.102.0": "4.102.0",
     "jsr:@std/assert@1": "1.0.13",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
+    "jsr:@std/cli@^1.0.20": "1.0.20",
     "jsr:@std/dotenv@~0.225.5": "0.225.5",
     "jsr:@std/fmt@^1.0.5": "1.0.8",
     "jsr:@std/fs@^1.0.11": "1.0.18",
@@ -30,6 +31,9 @@
     },
     "@std/bytes@1.0.6": {
       "integrity": "f6ac6adbd8ccd99314045f5703e23af0a68d7f7e58364b47d2c7f408aeb5820a"
+    },
+    "@std/cli@1.0.20": {
+      "integrity": "a8c384a2c98cec6ec6a2055c273a916e2772485eb784af0db004c5ab8ba52333"
     },
     "@std/dotenv@0.225.5": {
       "integrity": "9ce6f9d0ec3311f74a32535aa1b8c62ed88b1ab91b7f0815797d77a6f60c922f"
@@ -89,6 +93,7 @@
     "dependencies": [
       "jsr:@openai/openai@^4.102.0",
       "jsr:@std/assert@1",
+      "jsr:@std/cli@^1.0.20",
       "jsr:@std/dotenv@~0.225.5",
       "jsr:@std/log@~0.224.14",
       "jsr:@std/streams@^1.0.10",
