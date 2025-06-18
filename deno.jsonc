@@ -8,8 +8,6 @@
     "@std/log": "jsr:@std/log@^0.224.14",
     "@std/yaml": "jsr:@std/yaml@^1.0.8",
     "crayon": "https://deno.land/x/crayon@3.3.3/mod.ts",
-    "ink": "npm:ink@^6.0.0",
-    "react": "npm:react@^19.1.0",
   },
   "compilerOptions": {
     "types": [
