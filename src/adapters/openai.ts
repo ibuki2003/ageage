@@ -2,9 +2,13 @@ import { OpenAI } from "@openai/openai";
 import Printer from "../output.ts";
 import { Crayon, crayon } from "crayon";
 
-export const client = new OpenAI({
-  apiKey: Deno.env.get("OPENAI_API_KEY") || "",
-});
+export const client = new OpenAI({ apiKey: "" });
+
+/// Set the API key for the OpenAI client
+/// This function should be called after loading environment variables
+export function setApiKey(): void {
+  client.apiKey = Deno.env.get("OPENAI_API_KEY") || "";
+}
 
 const OUTPUT_TEXT_COLOR = crayon.blue;
 const REASONING_COLOR = crayon.yellow;
