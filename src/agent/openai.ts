@@ -151,6 +151,10 @@ export const adapter_openai: runCompletions = async (
     if (reqinput.length == 0 && input_iter) {
       await printer.write("Waiting for user input...\n", crayon.white.dim);
       const user_input = await input_iter?.next();
+      if (user_input.done) {
+        printer.write("Quitting...\n", crayon.white.dim);
+        return get_output_text(response);
+      }
       if (user_input.value) {
         const inp = user_input.value;
         log.debug("User input received:", inp);
