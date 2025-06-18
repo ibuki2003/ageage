@@ -16,6 +16,7 @@ export interface Config {
   tools: {
     builtin: {
       coder: CoderToolConfig;
+      reader: { description: string; };
     };
   };
 }
@@ -27,26 +28,22 @@ export const config: Config = {
       model: { model_id: "gpt-4.1-nano" },
       description: "Default agent",
       prompt: "You are a helpful assistant.",
-      child_agents: ["calculator"],
-      // tools: ["calc"],
-    },
-    "calculator": {
-      model: { model_id: "gpt-4.1-nano" },
-      description: "Evaluate mathematical expressions.",
-      prompt: "Perform calculations based on the input.",
-      // child_agents: [],
-      // tools: ["calc"],
+      // child_agents: ["calculator"],
+      tools: ["calc"],
     },
   },
   tools: {
     builtin: {
       coder: {
         model: {
-          model_id: "gpt-4.1-nano",
+          model_id: "gpt-4.1-mini",
         },
-        description: "Code editing tool",
+        description: "Edit code files based on a request. Request will be sent as a prompt to a LLM. Edit summary will be returned as a string.",
         edit_format: "diff",
         prompt: "You are a code editor. Please apply the following changes.",
+      },
+      reader: {
+        description: "Read the content of a file and return it as a string.",
       },
     },
   },

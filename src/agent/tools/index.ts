@@ -1,3 +1,7 @@
+import coder from "./coder.ts";
+import find from "./find.ts";
+import read_file from "./read_file.ts";
+
 export const calc_parameters_schema = {
   type: "object",
   properties: {
@@ -11,14 +15,13 @@ export const calc_parameters_schema = {
   additionalProperties: false,
 };
 
-export const availableTools: Record<
-  string,
-  {
-    schema: Record<string, unknown>;
-    description: string;
-    call: (args: string) => Promise<string>;
-  }
-> = {
+export type ToolDefinition = {
+  schema: Record<string, unknown>;
+  description: string;
+  call: (args: string) => Promise<string>;
+};
+
+export const availableTools: Record<string, ToolDefinition> = {
   "calc": {
     schema: calc_parameters_schema,
     description: "Evaluate a mathematical expression.",
@@ -32,4 +35,7 @@ export const availableTools: Record<
       }
     },
   },
+  coder,
+  read_file,
+  find,
 };
