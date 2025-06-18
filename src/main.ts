@@ -1,11 +1,18 @@
 import { crayon } from "crayon";
 // import { run } from "./screen.tsx";
 import { runAgent } from "./agent/index.ts";
-import { config } from "./config.ts";
+import { config, loadConfig } from "./config.ts";
 import { setupLogger } from "./logger.ts";
+
+const CONFIG_HOME = (Deno.env.get("XDG_CONFIG_HOME") || "~/.config") + "/ageage";
 
 async function main() {
   setupLogger();
+
+  await loadConfig([
+    CONFIG_HOME + "/config.yaml",
+    "./config.yaml",
+  ]);
 
   console.log(crayon.green("Hello, world!"));
 
