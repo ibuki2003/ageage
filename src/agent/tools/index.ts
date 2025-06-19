@@ -2,6 +2,7 @@ import Printer from "../../output.ts";
 import find from "./find.ts";
 import grep from "./grep.ts";
 import read_file from "./read_file.ts";
+import { git_add, git_commit, git_log, git_status, git_diff } from "./git.ts";
 
 export const calc_parameters_schema = {
   type: "object",
@@ -39,4 +40,9 @@ export const availableTools: () => Record<string, ToolDefinition> = () => ({
   read_file: read_file(),
   find: find(),
   grep: grep(),
+  git_status: git_status(),
+  git_add: git_add(),
+  git_commit: git_commit(),
+  git_log: git_log(),
+  git_diff: git_diff(),
 });

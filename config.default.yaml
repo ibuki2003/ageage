@@ -83,8 +83,9 @@ agents:
       - reader
       - knowledgebase
     tools:
-      # - coder # for simple editing
       - find
+      - git_status
+      - git_log
 
   architect:
     model: *o4-mini
@@ -192,6 +193,18 @@ tools:
     grep:
       description: "search whole project for given pattern. powered by `rg`."
       line_limit: 100
+
+    git:
+      status:
+        description: "Show working tree status"
+      add:
+        description: "Add file contents to the index"
+      commit:
+        description: "Record changes to the repository"
+      log:
+        description: "Show commit logs"
+      git_diff:
+        description: "Show changes between commits, commit and working tree, etc."
 
 filters:
   edit_file:

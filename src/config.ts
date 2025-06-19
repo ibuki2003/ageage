@@ -1,6 +1,7 @@
 import { AgentScheme } from "./agent/types.ts";
 import { parse } from "@std/yaml";
 import { EditFileFilterConfig } from "./filters/edit_file.ts";
+import { availableTools } from "./agent/tools/index.ts";
 
 export type ModelSpec = {
   // adapter: string;
@@ -23,6 +24,13 @@ export interface Config {
         description: string;
         line_limit: number;
       };
+      git: {
+        status: { description: string; };
+        add: { description: string; };
+        commit: { description: string; };
+        log: { description: string; };
+        git_diff: { description: string; };
+      };
     };
   };
   filters: {
@@ -43,6 +51,14 @@ export const config: Config = {
       read_file: { description: "" },
       find: { description: "" },
       grep: { description: "", line_limit: 0 },
+      git: {
+        status: { description: "" },
+        add: { description: "" },
+        commit: { description: "" },
+        log: { description: "" },
+        git_diff: { description: "" },
+        git_diff: { description: "" },
+      },
     },
   },
   filters: {
@@ -110,9 +126,10 @@ export async function loadConfig(files: string | string[] = []) {
     }
     // tools existence check
     if (agent.tools) {
+      const tools = availableTools();
       for (const tool of agent.tools) {
-      if (!(tool in config.tools.builtin)) {
-        console.warn(`Tool "${tool}" not found in config.tools.builtin for agent "${agentName}"`);
+      if (!(tool in tools)) {
+        console.warn(`Tool "${tool}" not found in available tools for agent "${agentName}"`);
       }
       }
     }
