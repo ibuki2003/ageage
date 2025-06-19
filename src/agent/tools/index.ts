@@ -22,7 +22,7 @@ export type ToolDefinition = {
   call: (args: string, printer?: Printer) => Promise<string>;
 };
 
-export const availableTools: Record<string, ToolDefinition> = {
+export const availableTools: () => Record<string, ToolDefinition> = () => ({
   "calc": {
     schema: calc_parameters_schema,
     description: "Evaluate a mathematical expression.",
@@ -39,4 +39,4 @@ export const availableTools: Record<string, ToolDefinition> = {
   read_file: read_file(),
   find: find(),
   grep: grep(),
-};
+});

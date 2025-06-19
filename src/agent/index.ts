@@ -42,7 +42,7 @@ const routeToolCall = async (
     log.debug(`Calling tool: ${tool}`);
     await printer.write(`Calling tool: ${tool} with args: `, crayon.cyan.bold);
     await printer.write(JSON.stringify(args, null, 2) + "\n", crayon.cyan);
-    const toolCall = availableTools[tool];
+    const toolCall = availableTools()[tool];
     try {
       const res = await toolCall.call(args, printer);
       await printer.write(`Tool ${tool} done.\n`);

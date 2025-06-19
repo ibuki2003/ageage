@@ -43,8 +43,9 @@ function getToolsScheme(scheme: AgentScheme): OpenAI.Responses.FunctionTool[] {
   }
 
   if (scheme.tools) {
+    const avl_tools = availableTools();
     for (const tool_name of scheme.tools) {
-      const tool = availableTools[tool_name];
+      const tool = avl_tools[tool_name];
       if (!tool) {
         // throw new Error(`Tool not found: ${tool_name}`);
         log.warn(`Tool not found: ${tool_name}`);

@@ -3,8 +3,12 @@
 
 import { config } from "./config.ts";
 
-export async function context_files(files: string[] | undefined): Promise<string> {
-  const all_files = [...config.context_files.files, ...(files ?? [])];
+export async function context_files(...files: (string[] | undefined)[]): Promise<string> {
+  let all_files = [...config.context_files.files];
+  all_files.push(...(files.filter(e => e !== undefined)).flat());
+  // make unique
+  all_files = Array.from(new Set(all_files));
+
   const contents = await Promise.all(all_files.map(async (file) => {
     try {
       return await Deno.readTextFile(file);
