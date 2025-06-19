@@ -96,4 +96,25 @@ export async function loadConfig(files: string | string[] = []) {
   } else {
     throw new Error("Invalid config files argument");
   }
+
+  // Validate loaded config
+  for (const agentName in config.agents) {
+    const agent = config.agents[agentName];
+    // child agents existence check
+    if (agent.child_agents) {
+      for (const childAgent of agent.child_agents) {
+        if (!(childAgent in config.agents)) {
+          console.warn(`Child agent "${childAgent}" not found in config.agents.${agentName}`);
+        }
+      }
+    }
+    // tools existence check
+    if (agent.tools) {
+      for (const tool of agent.tools) {
+      if (!(tool in config.tools.builtin)) {
+        console.warn(`Tool "${tool}" not found in config.tools.builtin for agent "${agentName}"`);
+      }
+      }
+    }
+  }
 }
