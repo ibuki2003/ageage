@@ -5,6 +5,7 @@ import { config } from "../config.ts";
 import { availableTools } from "./tools/index.ts";
 import * as log from "@std/log";
 import { client, get_output_text, print_delta } from "../adapters/openai.ts";
+import { context_files } from "../context_files.ts";
 
 function getToolsScheme(scheme: AgentScheme): OpenAI.Responses.FunctionTool[] {
   const tools: OpenAI.Responses.FunctionTool[] = [];
@@ -96,7 +97,8 @@ export const adapter_openai: runCompletions = async (
     const res = await client.responses.create({
       previous_response_id: last_id || null,
       input: reqinput,
-      instructions: agent_scheme.prompt,
+      // NOTE: load every time, because it can change
+      instructions: agent_scheme.prompt + await context_files(agent_scheme.context_files),
       stream: true,
       store: true,
       truncation: "auto",

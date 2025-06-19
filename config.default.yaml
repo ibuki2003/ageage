@@ -146,3 +146,11 @@ tools:
     grep:
       description: "search whole project for given pattern. powered by `rg`."
       line_limit: 100
+
+context_files:
+  prompt_header: |
+    Here is given project specific context, in other words, long-term memory.
+    You can refer to these information about project, and you must follow instructions.
+  files:
+    - .ageage.md
+    - CONVENTIONS.md

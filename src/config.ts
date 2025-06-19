@@ -26,6 +26,10 @@ export interface Config {
       };
     };
   };
+  context_files: {
+    prompt_header: string;
+    files: string[];
+  };
 }
 
 // empty default config; will be loaded from config.default.yaml on startup
@@ -44,6 +48,10 @@ export const config: Config = {
       find: { description: "" },
       grep: { description: "", line_limit: 0 },
     },
+  },
+  context_files: {
+    prompt_header: "",
+    files: [],
   },
 };
 

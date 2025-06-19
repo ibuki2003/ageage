@@ -7,6 +7,7 @@ import * as log from "@std/log";
 import { client, get_output_text, print_delta } from "../../adapters/openai.ts";
 import Printer from "../../output.ts";
 import { crayon } from "crayon";
+import { context_files } from "../../context_files.ts";
 
 export type CoderEditFormat = "whole" | "diff";
 
@@ -15,6 +16,7 @@ export type CoderToolConfig = {
   description: string;
   edit_format: CoderEditFormat;
   prompt: string;
+  context_files?: string[];
 };
 
 export const coder_parameters_schema = {
@@ -86,7 +88,8 @@ export async function coder_call(args: string, printer?: Printer): Promise<strin
       const res = await client.responses.create({
         input,
         previous_response_id: previous_response_id || undefined,
-        instructions: config.tools.builtin.coder.prompt,
+        // NOTE: load every time, because it can change
+        instructions: config.tools.builtin.coder.prompt + await context_files(config.tools.builtin.coder.context_files),
         stream: true,
         store: true,
         parallel_tool_calls: false,
