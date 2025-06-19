@@ -19,12 +19,8 @@ function edit_filter_instructions(): string {
 
 export async function edit_filter_outlet(output_text: string, printer: Printer): Promise<string[]> {
   try {
-    const edit_lines: Record<string, { add: number; remove: number }> = {};
     let success_count = 0;
-    let failure_count = 0;
-
     const errors: string[] = [];
-    failure_count = 0;
 
     // apply changes to target files based on edit blocks in output_text
     let idx = 0;
@@ -39,14 +35,9 @@ export async function edit_filter_outlet(output_text: string, printer: Printer):
             // create new file with replacement content
             await Deno.writeTextFile(file, replacement);
             success_count++;
-            if (!edit_lines[file]) {
-              edit_lines[file] = { add: 0, remove: 0 };
-            }
-            edit_lines[file].add += replacement.split(/\r?\n/).length;
           } else {
             printer && await printer.write(`File ${file} does not exist, but search text is not empty.\n`, crayon.red.bold);
             errors.push(`Edit #${idx}: File ${file} does not exist, but search text is not empty.`);
-            failure_count++;
           }
           continue;
         } else {
@@ -58,7 +49,6 @@ export async function edit_filter_outlet(output_text: string, printer: Printer):
           if (index === -1) {
             printer && await printer.write(`Search text not found in ${file}.\n`, crayon.red.bold);
             errors.push(`Edit #${idx}: Search text not found in ${file}.\n(search text: "${search.slice(0, 20)}...")`);
-            failure_count++;
             continue;
           } else {
             success_count++;
@@ -66,21 +56,17 @@ export async function edit_filter_outlet(output_text: string, printer: Printer):
           const before = content.slice(0, index);
           const after = content.slice(index + search.length);
           await Deno.writeTextFile(file, before + replacement + after);
-
-          if (!edit_lines[file]) {
-            edit_lines[file] = { add: 0, remove: 0 };
-          }
-          edit_lines[file].add += replacement.split(/\r?\n/).length;
-          edit_lines[file].remove += search.split(/\r?\n/).length;;
         }
       } catch (e) {
         printer && await printer.write(`Error applying edits to ${file}: ${e}\n`, crayon.red.bold);
       }
     }
 
-    return errors.length > 0
-      ? [`encountered the following errors while applying edits:\n${errors.join("\n")}`]
-      : [];
+    return [
+      errors.length > 0
+      ? `${success_count} edits applied successfully.\n${errors.length} errors occurred:\n${errors.join("\n")}`
+      : `${success_count} edits applied successfully.`,
+    ];
 
   } catch (e) {
     return [`Error processing request: ${e}`];
