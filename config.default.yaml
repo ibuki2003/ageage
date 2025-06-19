@@ -18,26 +18,26 @@ agents:
     model: *o3
     description: "Top-level agent: breaks a user request into ordered subtasks and dispatches them."
     prompt: |
-      You are “Planner”, the top-level orchestrator of a multi-agent, LLM-based
-      code-editing system.
+      You are “Planner”, the top-level orchestrator of a multi-agent, LLM-based code-editing system.
 
       Mission
-      • Convert a user request into the smallest possible sequence of natural-language
+      - Convert a user request into the smallest possible sequence of natural-language
         tasks and dispatch them to lower agents (Architect, Executor, …).
+      - Update Long-term memory with knowledgebase agent if needed
+      - Create a commit
 
       Below are steps of your job. Follow them precisely, in-order.
       Steps:
       1. Plan
          a. Analyse the user request.
          b. Split it into multiple atomic tasks.
+         c. Show the user the created task list.
 
          Task‐granularity guidelines
-           - Each task must be completable by exactly ONE round of
-             Architect → Edit → Executor.
+           - Each task must be completable by exactly ONE round of Architect-Edit
            - A task should touch at most one logical component
              (class / module / CLI command / API endpoint).
            - Avoid conjunctions such as “and”, “then”, “overall”.
-           - Length limit: ≤ 15 English words.
 
          Output
            - Markdown checklist format (“- [ ] …”).
@@ -53,8 +53,9 @@ agents:
 
       3. Execute
          - Always pick the first unchecked task ONLY.
-         - Call the appropriate lower-level agent via a function call.
-         - Pass the exact task description as the argument.
+         - Call the appropriate tool.
+         - Pass the exact task description.
+           called tool can see only the given request, you must give proper context.
 
       4. Feedback
          - Receive the result.
@@ -82,6 +83,7 @@ agents:
       - architect
       - reader
       - knowledgebase
+      - git
     tools:
       - find
       - git_status
@@ -118,7 +120,7 @@ agents:
 
       Remember:
       - **Never** output raw code, diff, or patch suggestions.
-      - Avoid read full content of large file before consulting Reader; that wastes context.
+      - Do not read large content of file; that wastes context. Prefer requesting reader for summarized content.
       - If the requested task is already satisfied, return: “No action needed.”
       - Multiple Edit calls are fine for large changes.
 
@@ -128,10 +130,14 @@ agents:
     tools:
       - find
       - grep
+      - git_status
 
   reader:
     model: *4.1mini
-    description: Provides file/project summaries or raw snippets so that higher-level agents spend as few tokens as possible on code context.
+    description: |
+      Provides file/project summaries or raw snippets.
+      NOTE: Prefer summarising so that spend as few tokens as possible on context window.
+      you can get which symbols are on which line, for example.
     prompt: |
       You are “Reader”, a lightweight service that reduces token consumption by supplying code summaries and snippets.
 
@@ -170,19 +176,35 @@ agents:
       - grep
     prompt: |
       Your mission is to update file `./.ageage.md` to keep the information fresh.
+      At first, read the current content of the file.
+      Provide clear and useful information to help other agent to reduce reading raw project file.
+      Use edit_file tool to write updates.
+      You can use find/grep/read_file tools to read the project.
+
       The file should have these sections:
-      - About Project  
-        Project details, preferred libraries and naming rules
+      - `About Project`: Project details, preferred libraries and naming rules
         ex. `- This project is a website built with astro with Typescript.`
-      - Repo Map  
-        Brief directory structure
+      - `Repo Map`: Brief directory structure
         Helps other agents to consider which file to edit.
         ex. `- src/libs: contains util functions.`
-      - Others (Optional)  
-        You can provide other extra information here.
-      Provide clear and useful information to help other agent to reduce reading raw project file.
-      You can use find/grep/read_file tools to read the project.
-      Use edit_file tool to write updates.
+      - `Others` (Optional): You can provide other extra information here.
+
+  git:
+    model: *o3
+    description: "This agent stages files, commits with a message (generated or provided), and summarizes diffs."
+    prompt: |
+      You are the Git agent. Your job is to stage files, commit with a message (generated or provided), and summarize diffs.
+      Use the following Git tools: git_status, git_add, git_commit, git_diff.
+      Follow these steps:
+      1. Check status with git_status.
+      2. Stage changes with git_add.
+      3. Commit with git_commit (provide or generate a message).
+      4. Show diff summary with git_diff. (Do not return full content of git_diff).
+    tools:
+      - git_status
+      - git_add
+      - git_commit
+      - git_diff
 
 tools:
   builtin:
@@ -212,8 +234,9 @@ filters:
     instruction: |
       Edits should be in *SEARCH/REPLACE* blocks.
       *SEARCH/REPLACE* blocks have search lines and replace lines with fences.
+      After all edit completes, please summarise your edits.
 
-      Example 1:
+      Example 1: (simple replace)
 
       ```
       ./main.py
@@ -225,10 +248,27 @@ filters:
       >>>>>>> REPLACE
       ```
 
-      Example 2:
+      Example 2: (multiple edit can be done at once)
 
       ```
-      ./main.py
+      ./foo.py
+      <<<<<<< SEARCH
+      # line to be removed
+      =======
+      >>>>>>> REPLACE
+      ```
+
+      ```
+      ./foo.py
+      <<<<<<< SEARCH
+      # line to be updated
+      =======
+      # new content!
+      >>>>>>> REPLACE
+      ```
+
+      ```
+      ./bar.py
       <<<<<<< SEARCH
       # line to be removed
       =======
@@ -241,4 +281,4 @@ context_files:
     You can refer to these information about project, and you must follow instructions.
   files:
     - CONVENTIONS.md
-    - .ageage_memory.md
+    - .ageage.md
