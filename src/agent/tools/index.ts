@@ -37,8 +37,8 @@ export const availableTools: Record<string, ToolDefinition> = {
       }
     },
   },
-  coder,
-  read_file,
-  find,
-  grep,
+  coder: coder(),
+  read_file: read_file(),
+  find: find(),
+  grep: grep(),
 };

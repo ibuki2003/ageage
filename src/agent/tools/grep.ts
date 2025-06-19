@@ -3,7 +3,6 @@
 import { config } from "../../config.ts";
 import { ToolDefinition } from "./index.ts";
 
-export const grep_description = config.tools.builtin.grep.description;
 export const grep_parameters_schema = {
   "type": "object",
   "properties": {
@@ -48,9 +47,9 @@ export async function grep_call(args: string): Promise<string> {
   }
 }
 
-const grep: ToolDefinition = {
+const grep: () => ToolDefinition = () => ({
   schema: grep_parameters_schema,
-  description: grep_description,
+  description: config.tools.builtin.grep.description,
   call: grep_call,
-};
+});
 export default grep;

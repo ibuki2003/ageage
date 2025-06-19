@@ -3,7 +3,6 @@
 import { config } from "../../config.ts";
 import { ToolDefinition } from "./index.ts";
 
-export const find_description = config.tools.builtin.find.description;
 export const find_parameters_schema = {
   "type": "object",
   "properties": {
@@ -45,9 +44,9 @@ export async function find_call(args: string): Promise<string> {
   return output;
 }
 
-const find: ToolDefinition = {
+const find: () => ToolDefinition = () => ({
   schema: find_parameters_schema,
-  description: find_description,
+  description: config.tools.builtin.find.description,
   call: find_call,
-};
+});
 export default find;

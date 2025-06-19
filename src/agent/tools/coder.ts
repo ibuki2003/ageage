@@ -17,8 +17,6 @@ export type CoderToolConfig = {
   prompt: string;
 };
 
-export const coder_description = config.tools.builtin.coder.description;
-
 export const coder_parameters_schema = {
   "type": "object",
   "properties": {
@@ -242,9 +240,9 @@ function* iterate_edit_blocks(output_text: string): Generator<{ file: string; se
   }
 }
 
-const coder: ToolDefinition = {
+const coder: () => ToolDefinition = () => ({
   schema: coder_parameters_schema,
-  description: coder_description,
+  description: config.tools.builtin.coder.description,
   call: coder_call,
-};
+});
 export default coder;

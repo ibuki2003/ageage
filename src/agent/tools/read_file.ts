@@ -3,7 +3,6 @@
 import { config } from "../../config.ts";
 import { ToolDefinition } from "./index.ts";
 
-export const read_file_description = config.tools.builtin.read_file.description;
 export const read_file_parameters_schema = {
   "type": "object",
   "properties": {
@@ -52,9 +51,9 @@ export async function read_file_call(args: string): Promise<string> {
   }
 }
 
-const read_file: ToolDefinition = {
+const read_file: () => ToolDefinition = () => ({
   schema: read_file_parameters_schema,
-  description: read_file_description,
+  description: config.tools.builtin.read_file.description,
   call: read_file_call,
-};
+});
 export default read_file;
