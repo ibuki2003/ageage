@@ -86,8 +86,7 @@ agents:
     tools:
       - coder
       - find
-      # - read_repo
-      # - grep
+      - grep
 
   reader:
     model: *4.1mini
@@ -131,11 +130,12 @@ agents:
     prompt: |
       Your mission is to update file `./.ageage.md` to keep the information fresh.
       The file should have these sections:
-      - Conventions  
-        Project details, conventions, preferred libraries and naming rules
+      - About Project  
+        Project details, preferred libraries and naming rules
         ex. `- This project is a website built with astro with Typescript.`
       - Repo Map  
-        directory structure; How to organize files
+        Brief directory structure
+        Helps other agents to consider which file to edit.
         ex. `- src/libs: contains util functions.`
       - Others (Optional)  
         You can provide other extra information here.
@@ -162,6 +162,7 @@ filters:
 
       Example 1:
 
+      ```
       ./main.py
       <<<<<<< SEARCH
       print("Hello")
@@ -169,19 +170,22 @@ filters:
       print("Hello, World!")
       print("additional line")
       >>>>>>> REPLACE
+      ```
 
       Example 2:
 
+      ```
       ./main.py
       <<<<<<< SEARCH
       # line to be removed
       =======
       >>>>>>> REPLACE
+      ```
 
 context_files:
   prompt_header: |
     Here is given project specific context, in other words, long-term memory.
     You can refer to these information about project, and you must follow instructions.
   files:
-    - .ageage.md
     - CONVENTIONS.md
+    - .ageage_memory.md
