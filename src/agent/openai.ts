@@ -116,10 +116,6 @@ export const adapter_openai: runCompletions = async (
         ? { effort: modelspec.reasoning as OpenAI.ReasoningEffort }
         : null,
     });
-
-    // delete previous response if it exists
-    last_id && await (client.responses.del(last_id).catch(_ => {}));
-
     await printer.write(`Request sent...\n`, crayon.white.dim);
 
     let response: OpenAI.Responses.Response | null = null;
