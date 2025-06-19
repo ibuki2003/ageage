@@ -40,10 +40,10 @@ export async function read_file_call(args: string): Promise<string> {
 
     if (range && range.includes("-")) {
       const [start, end] = range.split("-").map(Number);
-      if (isNaN(start) || isNaN(end) || start < 0 || end < start || end >= lines.length) {
-        return "Error: Invalid range specified. The file has ${line.length} lines.";
+      if (isNaN(start) || isNaN(end) || start <= 0 || end < start || end > lines.length) {
+        return `Error: Invalid range specified. The file has ${lines.length} lines. Available range is 1-${lines.length}.`;
       }
-      return lines.slice(start, end + 1).join("\n");
+      return lines.slice(start - 1, end).join("\n");
     }
     return lines.join("\n");
   } catch (error) {
