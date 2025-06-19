@@ -122,7 +122,7 @@ agents:
 
   knowledgebase:
     model: *4.1mini
-    description: Update long-term memory file as the request, referring the file.
+    description: Update long-term memory file as the request, by reading project files and directory structure
     filters: [ edit_file ]
     tools:
       - read_file

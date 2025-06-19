@@ -85,7 +85,6 @@ async function loadConfigFromFile(filePath: string) {
 export async function loadConfig(files: string | string[] = []) {
   // at first, reset config to default
   const defaultConfigFile = new URL("../config.default.yaml", import.meta.url); // NOTE: here is ./src
-  console.log("Loading default config from:", defaultConfigFile.toString());
   await loadConfigFromFile(defaultConfigFile.pathname);
 
   if (typeof files === "string") {

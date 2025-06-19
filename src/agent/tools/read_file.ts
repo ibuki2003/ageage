@@ -41,7 +41,7 @@ export async function read_file_call(args: string): Promise<string> {
     if (range && range.includes("-")) {
       const [start, end] = range.split("-").map(Number);
       if (isNaN(start) || isNaN(end) || start < 0 || end < start || end >= lines.length) {
-        return "Error: Invalid range specified.";
+        return "Error: Invalid range specified. The file has ${line.length} lines.";
       }
       return lines.slice(start, end + 1).join("\n");
     }

@@ -37,7 +37,7 @@ const routeToolCall = async (
 ): Promise<string> => {
   log.debug(`Routing tool call: ${tool} with args: ${args}`);
 
-  if (tool in availableTools) {
+  if (tool in availableTools()) {
     // Call a tool
     log.debug(`Calling tool: ${tool}`);
     await printer.write(`Calling tool: ${tool} with args: `, crayon.cyan.bold);

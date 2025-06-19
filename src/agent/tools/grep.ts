@@ -15,9 +15,9 @@ export const grep_parameters_schema = {
   "required": ["pattern"],
   additionalProperties: false,
 };
-const LINE_LIMIT = config.tools.builtin.grep.line_limit;
 
 export async function grep_call(args: string): Promise<string> {
+  const LINE_LIMIT = config.tools.builtin.grep.line_limit;
   const { pattern } = JSON.parse(args);
   const cmd = new Deno.Command("rg", {
     args: [

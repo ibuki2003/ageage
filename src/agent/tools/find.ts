@@ -18,6 +18,9 @@ export const find_parameters_schema = {
 
 export async function find_call(args: string): Promise<string> {
   const { pattern } = JSON.parse(args);
+  if (typeof pattern !== "string" || !pattern) {
+    return "Invalid pattern provided. Please provide a valid string pattern.";
+  }
   const cmd = new Deno.Command("fd", {
     args: [
       "--type",
@@ -25,6 +28,7 @@ export async function find_call(args: string): Promise<string> {
       "--color=never",
       "--hidden",
       "--exclude=.git",
+      ...(pattern.includes("/") ? ["--full-path"] : []),
       "--",
       pattern,
     ],
