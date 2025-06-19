@@ -68,6 +68,11 @@ Options:
 
   const is_tty = Deno.stdin.isTerminal();
   const input_text_arg = args._.join(" ").trim();
+  if (!is_tty && !input_text_arg) {
+    console.error("No input provided");
+    Deno.exit(1);
+  }
+
   const stdin_reader = async function* () {
     if (input_text_arg) {
       yield input_text_arg;
@@ -87,6 +92,7 @@ Options:
 
   if (args.agent && !(args.agent in config.agents)) {
     console.error(`Error: Agent "${args.agent}" not found in config.`);
+    console.error(`Available agents: ${Object.keys(config.agents).join(", ")}`);
     Deno.exit(1);
   }
   const agent = config.agents[args.agent || config.default_agent];
