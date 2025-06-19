@@ -22,7 +22,7 @@ export async function runAgent(
     input,
     async (tool, args) => {
       const res = await routeToolCall(tool, args, await printer.get_deep())
-      printer.write("\n");
+      await printer.write("\n");
       return res;
     },
     printer,
@@ -40,8 +40,8 @@ const routeToolCall = async (
   if (tool in availableTools()) {
     // Call a tool
     log.debug(`Calling tool: ${tool}`);
-    await printer.write(`Calling tool: ${tool} with args: `, crayon.cyan.bold);
-    await printer.write(JSON.stringify(args, null, 2) + "\n", crayon.cyan);
+    await printer.write(`Calling tool: ${tool} `, crayon.cyan.bold);
+    await printer.write("(" + args + ")\n", crayon.cyan);
     const toolCall = availableTools()[tool];
     try {
       const res = await toolCall.call(args, printer);
@@ -57,10 +57,10 @@ const routeToolCall = async (
 
   if (tool in config.agents) {
     // Call a child agent
-    log.debug(`Calling agent: ${tool}`);
-    const request = JSON.parse(args).request;
+    const request: string = JSON.parse(args).request;
+    log.debug(`Calling agent: ${tool} with request: ${request}`);
 
-    await printer.write(`Agent: ${tool} with request:\n`, crayon.cyan.bold);
+    await printer.write(`Calling ${tool} with request:\n`, crayon.cyan.bold);
     await printer.write(request + "\n", crayon.cyan);
 
     const agentScheme = config.agents[tool];

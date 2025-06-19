@@ -108,7 +108,7 @@ export const adapter_openai: runCompletions = async (
       store: true,
       truncation: "auto",
       tools,
-      parallel_tool_calls: false,
+      parallel_tool_calls: true,
 
       model: modelspec.model_id as string || "",
       max_output_tokens: modelspec.max_output_tokens as number || null,
@@ -120,7 +120,7 @@ export const adapter_openai: runCompletions = async (
     // delete previous response if it exists
     last_id && await (client.responses.del(last_id).catch(_ => {}));
 
-    printer.write(`Request sent...\n`, crayon.white.dim);
+    await printer.write(`Request sent...\n`, crayon.white.dim);
 
     let response: OpenAI.Responses.Response | null = null;
 
@@ -173,7 +173,7 @@ export const adapter_openai: runCompletions = async (
       await printer.write("Waiting for user input...\n", crayon.white.dim);
       const user_input = await input_iter?.next();
       if (user_input.done) {
-        printer.write("Quitting...\n", crayon.white.dim);
+        await printer.write("Quitting...\n", crayon.white.dim);
         return get_output_text(response);
       }
       if (user_input.value) {
