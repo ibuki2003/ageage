@@ -1,6 +1,6 @@
-import { CoderToolConfig } from "./agent/tools/coder.ts";
 import { AgentScheme } from "./agent/types.ts";
 import { parse } from "@std/yaml";
+import { EditFileFilterConfig } from "./filters/edit_file.ts";
 
 export type ModelSpec = {
   // adapter: string;
@@ -17,7 +17,6 @@ export interface Config {
   agents: Record<string, AgentScheme>;
   tools: {
     builtin: {
-      coder: CoderToolConfig;
       read_file: { description: string; };
       find: { description: string; };
       grep: {
@@ -25,6 +24,9 @@ export interface Config {
         line_limit: number;
       };
     };
+  };
+  filters: {
+    edit_file: EditFileFilterConfig;
   };
   context_files: {
     prompt_header: string;
@@ -38,15 +40,15 @@ export const config: Config = {
   agents: { },
   tools: {
     builtin: {
-      coder: {
-        model: { model_id: "", },
-        description: "",
-        edit_format: "diff",
-        prompt: "",
-      },
       read_file: { description: "" },
       find: { description: "" },
       grep: { description: "", line_limit: 0 },
+    },
+  },
+  filters: {
+    edit_file: {
+      instruction: "",
+      edit_format: "diff",
     },
   },
   context_files: {

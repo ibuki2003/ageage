@@ -6,6 +6,7 @@ import { availableTools } from "./tools/index.ts";
 import * as log from "@std/log";
 import { client, get_output_text, print_delta } from "../adapters/openai.ts";
 import { context_files } from "../context_files.ts";
+import { applyFiltersOutlet, getFilterInstructions } from "../filters/index.ts";
 
 function getToolsScheme(scheme: AgentScheme): OpenAI.Responses.FunctionTool[] {
   const tools: OpenAI.Responses.FunctionTool[] = [];
@@ -68,6 +69,9 @@ export const adapter_openai: runCompletions = async (
   tool_callback,
   printer,
 ) => {
+  const enabled_filters = agent_scheme.filters ?? [];
+  const filters_instructions = getFilterInstructions(enabled_filters);
+
   const modelspec = agent_scheme.model;
 
   let last_id: string = "";
@@ -98,7 +102,7 @@ export const adapter_openai: runCompletions = async (
       previous_response_id: last_id || null,
       input: reqinput,
       // NOTE: load every time, because it can change
-      instructions: agent_scheme.prompt + await context_files(agent_scheme.context_files),
+      instructions: agent_scheme.prompt + "\n" + filters_instructions + await context_files(agent_scheme.context_files),
       stream: true,
       store: true,
       truncation: "auto",
@@ -146,6 +150,16 @@ export const adapter_openai: runCompletions = async (
           output: result,
         });
       }
+    }
+
+    const output_text = get_output_text(response);
+
+    if (output_text) {
+      const res = await applyFiltersOutlet(output_text, enabled_filters, printer);
+      reqinput.push(...res.map((text): OpenAI.Responses.ResponseInputItem => ({
+        role: "user",
+        content: text,
+      })));
     }
 
     // Add user input if available

@@ -54,6 +54,7 @@ agents:
     child_agents:
       - architect
       - reader
+      - knowledgebase
     tools:
       # - coder # for simple editing
       - find
@@ -109,36 +110,41 @@ agents:
       - read_file
       - find
 
+  coder:
+    model: *o4-mini
+    description: Edit the specified file according to the request, using LLM. Accepts requests in a paragraph, not code segment
+    filters: [ edit_file ]
+    tools:
+      - read_file
+    prompt: |
+      You are a professional programmer.
+      Your job is to edit given files according to the instructions given by the user.
+
+  knowledgebase:
+    model: *4.1mini
+    description: Update long-term memory file as the request, referring the file.
+    filters: [ edit_file ]
+    tools:
+      - read_file
+      - find
+      - grep
+    prompt: |
+      Your mission is to update file `./.ageage.md` to keep the information fresh.
+      The file should have these sections:
+      - Conventions  
+        Project details, conventions, preferred libraries and naming rules
+        ex. `- This project is a website built with astro with Typescript.`
+      - Repo Map  
+        directory structure; How to organize files
+        ex. `- src/libs: contains util functions.`
+      - Others (Optional)  
+        You can provide other extra information here.
+      Provide clear and useful information to help other agent to reduce reading raw project file.
+      You can use find/grep/read_file tools to read the project.
+      Use edit_file tool to write updates.
+
 tools:
   builtin:
-    coder:
-      model: *o4-mini
-      description: Edit the specified file according to the request, using LLM. Accepts requests in a paragraph, not code segment
-      edit_format: diff
-      prompt: |
-        You are a professional programmer.
-        Your job is to edit given files according to the instructions given by the user.
-        Edits should be in *SEARCH/REPLACE* blocks.
-        *SEARCH/REPLACE* blocks have search lines and replace lines with fences.
-
-        Example 1:
-
-        ./main.py
-        <<<<<<< SEARCH
-        print("Hello")
-        =======
-        print("Hello, World!")
-        print("additional line")
-        >>>>>>> REPLACE
-
-        Example 2:
-
-        ./main.py
-        <<<<<<< SEARCH
-        # line to be removed
-        =======
-        >>>>>>> REPLACE
-
     read_file:
       description: "Read and return the file content."
     find:
@@ -146,6 +152,31 @@ tools:
     grep:
       description: "search whole project for given pattern. powered by `rg`."
       line_limit: 100
+
+filters:
+  edit_file:
+    edit_format: "diff"
+    instruction: |
+      Edits should be in *SEARCH/REPLACE* blocks.
+      *SEARCH/REPLACE* blocks have search lines and replace lines with fences.
+
+      Example 1:
+
+      ./main.py
+      <<<<<<< SEARCH
+      print("Hello")
+      =======
+      print("Hello, World!")
+      print("additional line")
+      >>>>>>> REPLACE
+
+      Example 2:
+
+      ./main.py
+      <<<<<<< SEARCH
+      # line to be removed
+      =======
+      >>>>>>> REPLACE
 
 context_files:
   prompt_header: |

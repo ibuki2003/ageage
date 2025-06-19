@@ -8,6 +8,7 @@ export interface AgentScheme {
   child_agents?: string[];
   tools?: string[];
   context_files?: string[];
+  filters?: string[];
 }
 
 export type ToolCall = (tool: string, args: string) => Promise<string>;
