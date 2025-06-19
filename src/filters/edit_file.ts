@@ -62,11 +62,13 @@ export async function edit_filter_outlet(output_text: string, printer: Printer):
       }
     }
 
-    return [
-      errors.length > 0
-      ? `${success_count} edits applied successfully.\n${errors.length} errors occurred:\n${errors.join("\n")}`
-      : `${success_count} edits applied successfully.`,
-    ];
+    return (success_count === 0 && errors.length === 0)
+      ? []
+      : [
+        errors.length > 0
+        ? `${success_count} edits applied successfully.\n${errors.length} errors occurred:\n${errors.join("\n")}`
+        : `${success_count} edits applied successfully.`,
+      ];
 
   } catch (e) {
     return [`Error processing request: ${e}`];
