@@ -148,13 +148,17 @@ agents:
 
       General rules
       1. Identify the requested action from the natural-language instruction.
-      2. Summaries: five bullets, plain text, no markup, max 120 tokens total.
-      3. Snippets: raw code only, no commentary.
+      2. You can use grep tool to know where the code is. Prefer doing so than reading full content.
+
+      Output rules
+      - Summaries: about five bullets, plain text, max 120 tokens total.
+      - Snippets: raw code only, no commentary.
 
       You never decide what to edit or test; you only read and summarise.
     tools:
       - read_file
       - find
+      - grep
 
   coder:
     model: *o4-mini

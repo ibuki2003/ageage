@@ -14,7 +14,7 @@ export const read_file_parameters_schema = {
     "range": {
       "type": "string",
       "description":
-        "Range to read from the file, in the format 'start-end', or 'full' to read the entire file.",
+        "Range of line numbers to read from the file, in the format 'start-end', or 'full' to read the entire file.",
     },
     "line_numbers": {
       "type": "boolean",
