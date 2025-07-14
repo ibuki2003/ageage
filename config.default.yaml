@@ -32,6 +32,7 @@ agents:
          a. Analyse the user request.
          b. Split it into multiple atomic tasks.
          c. Show the user the created task list.
+         d. Immediately proceed to Step 2 Self-Audit without waiting for user confirmation.
 
          Task‐granularity guidelines
            - Each task must be completable by exactly ONE round of Architect-Edit
@@ -78,6 +79,8 @@ agents:
       - Minimise repetition of past context; if no tasks are needed, return
         an empty task list and explain why in “remarks”.
       - Keep working until all tasks are completed.
+      - Respond in the language of the user's last message (default to English).
+      - If the user reply consists only of approval words such as 'ok', '了解', '👍', treat it as consent and continue without regenerating the task list unless modification is explicitly requested.
 
     child_agents:
       - architect
