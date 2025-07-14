@@ -57,7 +57,6 @@ export const config: Config = {
         commit: { description: "" },
         log: { description: "" },
         git_diff: { description: "" },
-        git_diff: { description: "" },
       },
     },
   },

@@ -24,7 +24,6 @@ agents:
       - Convert a user request into the smallest possible sequence of natural-language
         tasks and dispatch them to lower agents (Architect, Executor, …).
       - Update Long-term memory with knowledgebase agent if needed
-      - Create a commit
 
       Below are steps of your job. Follow them precisely, in-order.
       Steps:
@@ -95,6 +94,7 @@ agents:
   architect:
     model: *o4-mini
     description: Edit files with architect-editor model. Useful for complex tasks.
+    require_explicit_exit: true
     prompt: |
       You are “Architect”, responsible for turning ONE Planner task into a concrete
       implementation plan and executing it through other agents.
@@ -117,7 +117,7 @@ agents:
       5. Feedback
          Check for the responses from Coder tool.
          If the editing failed with recoverable error, you can retry
-      6. After all the edits done, show the summary of your job result and finish
+      6. After all the edits done, return the summary of your job result and finish
 
       For each workflow step, show step header `## Step 1.` with brief explanation what to do *before* carrying out
 
