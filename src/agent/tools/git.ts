@@ -66,7 +66,7 @@ export async function git_add_call(args: string): Promise<string> {
   const output = new TextDecoder().decode(stdout);
   if (!success) {
     const error = new TextDecoder().decode(stderr);
-    throw new Error(`Error executing git add: ${error}`);
+    throw new Error(`Error executing git add: ${error}\n${output}\n`);
   }
   return output;
 }
@@ -106,7 +106,7 @@ export async function git_commit_call(args: string): Promise<string> {
   const output = new TextDecoder().decode(stdout);
   if (!success) {
     const error = new TextDecoder().decode(stderr);
-    throw new Error(`Error executing git commit: ${error}`);
+    throw new Error(`Error executing git commit: ${error}\n${output}\n`);
   }
   return output;
 }
@@ -147,7 +147,7 @@ export async function git_log_call(args: string): Promise<string> {
   const output = new TextDecoder().decode(stdout);
   if (!success) {
     const error = new TextDecoder().decode(stderr);
-    throw new Error(`Error executing git log: ${error}`);
+    throw new Error(`Error executing git log: ${error}\n${output}\n`);
   }
   return output;
 }
@@ -188,7 +188,7 @@ export async function git_diff_call(args: string): Promise<string> {
   const output = new TextDecoder().decode(stdout);
   if (!success) {
     const error = new TextDecoder().decode(stderr);
-    throw new Error(`Error executing git diff: ${error}`);
+    throw new Error(`Error executing git diff: ${error}\n${output}\n`);
   }
   return output;
 }
