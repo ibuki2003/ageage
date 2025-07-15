@@ -24,7 +24,13 @@ export async function edit_filter_outlet(output_text: string, printer: Printer):
 
     // apply changes to target files based on edit blocks in output_text
     let idx = 0;
-    for (const { file, search, replace: replacement } of iterate_edit_blocks(output_text)) {
+    for (const block of iterate_edit_blocks(output_text)) {
+      if ("error" in block) {
+        log.error(`Error in edit block: ${block.error}`);
+        errors.push("Error: " + block.error);
+        continue;
+      }
+      const { file, search, replace: replacement } = block;
       ++idx;
       log.info(`Applying edit to file: ${file}`);
       printer && await printer.write(`Applying edit to file: ${file}\n`, crayon.green.bold);
@@ -75,7 +81,7 @@ export async function edit_filter_outlet(output_text: string, printer: Printer):
   }
 }
 
-function* iterate_edit_blocks(output_text: string): Generator<{ file: string; search: string; replace: string }> {
+function* iterate_edit_blocks(output_text: string): Generator<{ file: string; search: string; replace: string } | { error : string }> {
   const lines = output_text.split("\n");
   let file: string = "";
   let search: string[] = [];
@@ -89,6 +95,8 @@ function* iterate_edit_blocks(output_text: string): Generator<{ file: string; se
       case 0: {
         if (trimmed === "<<<<<<< SEARCH") {
           state = 1;
+        } else if (trimmed.startsWith("---") || trimmed.startsWith("+++")) {
+          yield { error: "unified diff format detected, is that intended?" };
         } else if (trimmed) {
           file = trimmed; // use last non-empty line as file name
         }
@@ -116,6 +124,9 @@ function* iterate_edit_blocks(output_text: string): Generator<{ file: string; se
         break;
       }
     }
+  }
+  if (state !== 0) {
+    yield { error: "Invalid edit block found" };
   }
 }
 
