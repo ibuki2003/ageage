@@ -113,7 +113,7 @@ export const adapter_openai: runCompletions = async (
       model: modelspec.model_id as string || "",
       max_output_tokens: modelspec.max_output_tokens as number || null,
       reasoning: modelspec.reasoning
-        ? { effort: modelspec.reasoning as OpenAI.ReasoningEffort }
+        ? { effort: modelspec.reasoning as OpenAI.ReasoningEffort, summary: "auto" }
         : null,
     });
     await printer.write(`Request sent...\n`, crayon.white.dim);
