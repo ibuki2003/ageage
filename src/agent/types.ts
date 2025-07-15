@@ -4,7 +4,6 @@ import Printer from "../output.ts";
 export interface AgentScheme {
   model: ModelSpec;
   description: string;
-  require_explicit_exit?: boolean;
   prompt: string;
   child_agents?: string[];
   tools?: string[];

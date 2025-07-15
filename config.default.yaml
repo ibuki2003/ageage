@@ -94,7 +94,7 @@ agents:
   architect:
     model: *o4-mini
     description: Edit files with architect-editor model. Useful for complex tasks.
-    require_explicit_exit: true
+    filters: [ explicit_return ]
     prompt: |
       You are “Architect”, responsible for turning ONE Planner task into a concrete
       implementation plan and executing it through other agents.
@@ -236,6 +236,13 @@ tools:
         description: "Show changes between commits, commit and working tree, etc."
 
 filters:
+  explicit_return:
+    trigger_word: "[TASK FINISHED]"
+    instruction: |
+      When your job is all done, report the summary and then finish your response with `[TASK FINISHED]`.
+      DO NOT use this keyword until your job is completed.
+    repeating_input: "ok, you can continue working"
+
   edit_file:
     edit_format: "diff"
     instruction: |

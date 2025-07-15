@@ -8,24 +8,6 @@ import { client, get_output_text, print_delta } from "../adapters/openai.ts";
 import { context_files } from "../context_files.ts";
 import { applyFiltersOutlet, getFilterInstructions } from "../filters/index.ts";
 
-const agentReturnFunction: OpenAI.Responses.FunctionTool = {
-  type: "function",
-  name: "agent_return",
-  description: "Finish the agent execution and return the output. You need to call this function explicitly to finish the agent execution. otherwise, your job will be considered unfinished.",
-  strict: true,
-  parameters: {
-    type: "object",
-    properties: {
-      output: {
-        type: "string",
-        description: "The output of the agent",
-      },
-    },
-    required: ["output"],
-    additionalProperties: false,
-  },
-}
-
 function getToolsScheme(scheme: AgentScheme): OpenAI.Responses.FunctionTool[] {
   const tools: OpenAI.Responses.FunctionTool[] = [];
   const agents = config.agents;
@@ -112,11 +94,6 @@ export const adapter_openai: runCompletions = async (
   }
   const input_iter = typeof input === "string" ? null : input;
 
-  if (!input_iter && agent_scheme.require_explicit_exit) {
-    // if this agent session is not interactive
-    tools.push(agentReturnFunction); // Add the agent return function to the tools
-  }
-
   let reqinput: OpenAI.Responses.ResponseInput = [
     { role: "user", type: "message", content: first_input },
   ];
@@ -163,27 +140,14 @@ export const adapter_openai: runCompletions = async (
 
     reqinput = [];
 
-    let agent_return: string | null = null;
-
     // Process function calls from the response
     for (const output of response.output) {
       if (output.type === "function_call") {
-        if (output.name === "agent_return") {
-          const args = JSON.parse(output.arguments);
-          // Special case for agent return function
-          if (args.output) {
-            agent_return = args.output;
-            await printer.write(`Agent return function called with output: ${agent_return}\n`, crayon.green);
-          }
-          continue; // Skip further processing for this function call
-        }
-
         const result = await tool_callback(output.name, output.arguments);
-        // log.debug(`Function call output for ${output.name}:`, result);
         reqinput.push({
           type: "function_call_output",
           call_id: output.call_id,
-          output: result,
+          output: result ?? "",
         });
       }
     }
@@ -207,30 +171,21 @@ export const adapter_openai: runCompletions = async (
         await printer.write("Quitting...\n", crayon.white.dim);
         return get_output_text(response);
       }
-      if (user_input.value) {
-        const inp = user_input.value;
-        log.debug("User input received:", inp);
-        reqinput.push({
-          type: "message",
-          role: "user",
-          content: inp,
-        });
-      }
+      const inp = user_input.value;
+      log.debug("User input received:", inp);
+      reqinput.push({
+        type: "message",
+        role: "user",
+        content: inp,
+      });
     }
 
     if (reqinput.length === 0) {
-      const ret = agent_scheme.require_explicit_exit ? agent_return : output_text;
       // finally, print a separator line
       await printer.write("--------------------------------------------------\n", crayon.white.dim);
 
       // No more input, we can return the final output
-      return ret;
-    }
-    if (agent_return) {
-      await printer.write(
-          "Agent return function was called, but there is still user input to process. Continuing...\n",
-          crayon.white.dim,
-      );
+      return output_text;
     }
 
     // Otherwise, we continue the loop

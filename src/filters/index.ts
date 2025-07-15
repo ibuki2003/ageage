@@ -1,5 +1,6 @@
 import Printer from "../output.ts";
 import edit_file from "./edit_file.ts";
+import explicit_return from "./explicit_return.ts";
 
 export type Filter = {
   instruction: () => string;
@@ -8,6 +9,7 @@ export type Filter = {
 
 export const filters: Record<string, Filter> = {
   edit_file,
+  explicit_return,
 }
 
 export function getFilterInstructions(enabled_filters: string[]): string {

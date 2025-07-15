@@ -2,6 +2,7 @@ import { AgentScheme } from "./agent/types.ts";
 import { parse } from "@std/yaml";
 import { EditFileFilterConfig } from "./filters/edit_file.ts";
 import { availableTools } from "./agent/tools/index.ts";
+import { ExplicitReturnFilterConfig } from "./filters/explicit_return.ts";
 
 export type ModelSpec = {
   // adapter: string;
@@ -34,6 +35,7 @@ export interface Config {
     };
   };
   filters: {
+    explicit_return: ExplicitReturnFilterConfig;
     edit_file: EditFileFilterConfig;
   };
   context_files: {
@@ -61,6 +63,11 @@ export const config: Config = {
     },
   },
   filters: {
+    explicit_return: {
+      trigger_word: "",
+      instruction: "",
+      repeating_input: "",
+    },
     edit_file: {
       instruction: "",
       edit_format: "diff",
