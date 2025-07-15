@@ -8,8 +8,7 @@ export const grep_parameters_schema = {
   "properties": {
     "pattern": {
       "type": "string",
-      "description":
-        "Regular expression pattern",
+      "description": "Regular expression pattern",
     },
   },
   "required": ["pattern"],

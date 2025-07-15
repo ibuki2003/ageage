@@ -17,7 +17,10 @@ function edit_filter_instructions(): string {
   return config.filters.edit_file.instruction;
 }
 
-export async function edit_filter_outlet(output_text: string, printer: Printer): Promise<string[]> {
+export async function edit_filter_outlet(
+  output_text: string,
+  printer: Printer,
+): Promise<string[]> {
   try {
     let success_count = 0;
     const errors: string[] = [];
@@ -33,7 +36,11 @@ export async function edit_filter_outlet(output_text: string, printer: Printer):
       const { file, search, replace: replacement } = block;
       ++idx;
       log.info(`Applying edit to file: ${file}`);
-      printer && await printer.write(`Applying edit to file: ${file}\n`, crayon.green.bold);
+      printer &&
+        await printer.write(
+          `Applying edit to file: ${file}\n`,
+          crayon.green.bold,
+        );
       try {
         // TODO: check target file is valid
         if (!(await Deno.stat(file).catch(() => null))) {
@@ -42,19 +49,33 @@ export async function edit_filter_outlet(output_text: string, printer: Printer):
             await Deno.writeTextFile(file, replacement);
             success_count++;
           } else {
-            printer && await printer.write(`File ${file} does not exist, but search text is not empty.\n`, crayon.red.bold);
-            errors.push(`Edit #${idx}: File ${file} does not exist, but search text is not empty.`);
+            printer &&
+              await printer.write(
+                `File ${file} does not exist, but search text is not empty.\n`,
+                crayon.red.bold,
+              );
+            errors.push(
+              `Edit #${idx}: File ${file} does not exist, but search text is not empty.`,
+            );
           }
           continue;
         } else {
           let content = await Deno.readTextFile(file);
-          if (!content.endsWith('\n')) {
-            content += '\n'; // ensure file ends with newline
+          if (!content.endsWith("\n")) {
+            content += "\n"; // ensure file ends with newline
           }
           const index = content.indexOf(search);
           if (index === -1) {
-            printer && await printer.write(`Search text not found in ${file}.\n`, crayon.red.bold);
-            errors.push(`Edit #${idx}: Search text not found in ${file}.\n(search text: "${search.slice(0, 20)}...")`);
+            printer &&
+              await printer.write(
+                `Search text not found in ${file}.\n`,
+                crayon.red.bold,
+              );
+            errors.push(
+              `Edit #${idx}: Search text not found in ${file}.\n(search text: "${
+                search.slice(0, 20)
+              }...")`,
+            );
             continue;
           } else {
             success_count++;
@@ -64,24 +85,31 @@ export async function edit_filter_outlet(output_text: string, printer: Printer):
           await Deno.writeTextFile(file, before + replacement + after);
         }
       } catch (e) {
-        printer && await printer.write(`Error applying edits to ${file}: ${e}\n`, crayon.red.bold);
+        printer &&
+          await printer.write(
+            `Error applying edits to ${file}: ${e}\n`,
+            crayon.red.bold,
+          );
       }
     }
 
-    return (success_count === 0 && errors.length === 0)
-      ? []
-      : [
-        errors.length > 0
-        ? `${success_count} edits applied successfully.\n${errors.length} errors occurred:\n${errors.join("\n")}`
+    return (success_count === 0 && errors.length === 0) ? [] : [
+      errors.length > 0
+        ? `${success_count} edits applied successfully.\n${errors.length} errors occurred:\n${
+          errors.join("\n")
+        }`
         : `${success_count} edits applied successfully.`,
-      ];
-
+    ];
   } catch (e) {
     return [`Error processing request: ${e}`];
   }
 }
 
-function* iterate_edit_blocks(output_text: string): Generator<{ file: string; search: string; replace: string } | { error : string }> {
+function* iterate_edit_blocks(
+  output_text: string,
+): Generator<
+  { file: string; search: string; replace: string } | { error: string }
+> {
   const lines = output_text.split("\n");
   let file: string = "";
   let search: string[] = [];
@@ -114,7 +142,11 @@ function* iterate_edit_blocks(output_text: string): Generator<{ file: string; se
         if (trimmed === ">>>>>>> REPLACE") {
           state = 0;
           // NOTE: always add newline at the end
-          yield { file, search: search.join("\n") + '\n', replace: replace.join("\n") + '\n' };
+          yield {
+            file,
+            search: search.join("\n") + "\n",
+            replace: replace.join("\n") + "\n",
+          };
           file = "";
           search = [];
           replace = [];

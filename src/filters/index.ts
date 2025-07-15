@@ -10,7 +10,7 @@ export type Filter = {
 export const filters: Record<string, Filter> = {
   edit_file,
   explicit_return,
-}
+};
 
 export function getFilterInstructions(enabled_filters: string[]): string {
   const instructions: string[] = [];

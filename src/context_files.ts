@@ -3,9 +3,11 @@
 
 import { config } from "./config.ts";
 
-export async function context_files(...files: (string[] | undefined)[]): Promise<string> {
+export async function context_files(
+  ...files: (string[] | undefined)[]
+): Promise<string> {
   let all_files = [...config.context_files.files];
-  all_files.push(...(files.filter(e => e !== undefined)).flat());
+  all_files.push(...(files.filter((e) => e !== undefined)).flat());
   // make unique
   all_files = Array.from(new Set(all_files));
 
@@ -17,5 +19,6 @@ export async function context_files(...files: (string[] | undefined)[]): Promise
     }
   }));
 
-  return "\n\n" + config.context_files.prompt_header + "\n\n" + contents.join("\n\n");
+  return "\n\n" + config.context_files.prompt_header + "\n\n" +
+    contents.join("\n\n");
 }

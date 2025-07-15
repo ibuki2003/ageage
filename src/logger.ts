@@ -11,7 +11,8 @@ export function setupLogger() {
     handlers: {
       file: new log.FileHandler("DEBUG", {
         filename: "app.log",
-        formatter: (record) => `[${record.levelName}] ${record.msg} ${formatArgs(record.args)}`,
+        formatter: (record) =>
+          `[${record.levelName}] ${record.msg} ${formatArgs(record.args)}`,
       }),
     },
     loggers: {
@@ -24,7 +25,7 @@ export function setupLogger() {
 
   // Flush log handlers on unload
   globalThis.addEventListener("unload", () => {
-    log.getLogger().handlers.forEach(handler => {
+    log.getLogger().handlers.forEach((handler) => {
       if (handler instanceof log.FileHandler) {
         handler.flush();
       }
@@ -33,7 +34,7 @@ export function setupLogger() {
 }
 
 function formatArgs(args: unknown[]): string {
-  return args.map(arg => {
+  return args.map((arg) => {
     if (typeof arg === "object") {
       return JSON.stringify(arg);
     }

@@ -21,7 +21,7 @@ export async function runAgent(
     scheme,
     input,
     async (tool, args) => {
-      const res = await routeToolCall(tool, args, await printer.get_deep())
+      const res = await routeToolCall(tool, args, await printer.get_deep());
       await printer.write("\n");
       return res;
     },
@@ -50,7 +50,10 @@ const routeToolCall = async (
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       log.error(`Error calling tool ${tool}:`, error);
-      await printer.write(`Error calling tool ${tool}: ${msg}`, crayon.red.bold);
+      await printer.write(
+        `Error calling tool ${tool}: ${msg}`,
+        crayon.red.bold,
+      );
       return JSON.stringify({ "error": msg });
     }
   }

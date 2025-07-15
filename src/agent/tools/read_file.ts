@@ -8,8 +8,7 @@ export const read_file_parameters_schema = {
   "properties": {
     "file_path": {
       "type": "string",
-      "description":
-        "Path to the file to read. Path should start with `./`",
+      "description": "Path to the file to read. Path should start with `./`",
     },
     "range": {
       "type": "string",
@@ -18,8 +17,7 @@ export const read_file_parameters_schema = {
     },
     "line_numbers": {
       "type": "boolean",
-      "description":
-        "If true, the output will include line numbers.",
+      "description": "If true, the output will include line numbers.",
     },
   },
   "required": ["file_path", "range", "line_numbers"],
@@ -35,19 +33,26 @@ export async function read_file_call(args: string): Promise<string> {
     let lines = (await Deno.readTextFile(file_path)).split("\n");
     if (line_numbers) {
       const digits = lines.length.toString().length;
-      lines = lines.map((line, index) => `${String(index + 1).padStart(digits, " ")}: ${line}`);
+      lines = lines.map((line, index) =>
+        `${String(index + 1).padStart(digits, " ")}: ${line}`
+      );
     }
 
     if (range && range.includes("-")) {
       const [start, end] = range.split("-").map(Number);
-      if (isNaN(start) || isNaN(end) || start <= 0 || end < start || end > lines.length) {
+      if (
+        isNaN(start) || isNaN(end) || start <= 0 || end < start ||
+        end > lines.length
+      ) {
         return `Error: Invalid range specified. The file has ${lines.length} lines. Available range is 1-${lines.length}.`;
       }
       return lines.slice(start - 1, end).join("\n");
     }
     return lines.join("\n");
   } catch (error) {
-    return `Error reading file: ${error instanceof Error ? error.message : String(error)}`;
+    return `Error reading file: ${
+      error instanceof Error ? error.message : String(error)
+    }`;
   }
 }
 

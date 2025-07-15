@@ -81,10 +81,9 @@ export const adapter_openai: runCompletions = async (
 
   log.debug(`Using tools: ${tools.map((t) => t.name).join(", ")}`);
 
-
   const first_input = typeof input === "string" ? input : await (async () => {
     const l = await input.next();
-    if (l.done) { return null; }
+    if (l.done) return null;
     return l.value;
   })();
   if (!first_input) {
@@ -103,7 +102,8 @@ export const adapter_openai: runCompletions = async (
       previous_response_id: last_id || null,
       input: reqinput,
       // NOTE: load every time, because it can change
-      instructions: agent_scheme.prompt + "\n" + filters_instructions + await context_files(agent_scheme.context_files),
+      instructions: agent_scheme.prompt + "\n" + filters_instructions +
+        await context_files(agent_scheme.context_files),
       stream: true,
       store: true,
       truncation: "auto",
@@ -113,7 +113,10 @@ export const adapter_openai: runCompletions = async (
       model: modelspec.model_id as string || "",
       max_output_tokens: modelspec.max_output_tokens as number || null,
       reasoning: modelspec.reasoning
-        ? { effort: modelspec.reasoning as OpenAI.ReasoningEffort, summary: "auto" }
+        ? {
+          effort: modelspec.reasoning as OpenAI.ReasoningEffort,
+          summary: "auto",
+        }
         : null,
     });
     await printer.write(`Request sent...\n`, crayon.white.dim);
@@ -155,7 +158,11 @@ export const adapter_openai: runCompletions = async (
     const output_text = get_output_text(response);
 
     if (output_text) {
-      const res = await applyFiltersOutlet(output_text, enabled_filters, printer);
+      const res = await applyFiltersOutlet(
+        output_text,
+        enabled_filters,
+        printer,
+      );
       reqinput.push(...res.map((text): OpenAI.Responses.ResponseInputItem => ({
         role: "user",
         content: text,
@@ -182,7 +189,10 @@ export const adapter_openai: runCompletions = async (
 
     if (reqinput.length === 0) {
       // finally, print a separator line
-      await printer.write("--------------------------------------------------\n", crayon.white.dim);
+      await printer.write(
+        "--------------------------------------------------\n",
+        crayon.white.dim,
+      );
 
       // No more input, we can return the final output
       return output_text;

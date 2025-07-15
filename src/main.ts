@@ -2,7 +2,7 @@ import { runAgent } from "./agent/index.ts";
 import { config, loadConfig } from "./config.ts";
 import { setupLogger } from "./logger.ts";
 import Printer from "./output.ts";
-import { TextLineStream } from '@std/streams'
+import { TextLineStream } from "@std/streams";
 import { load } from "@std/dotenv";
 import { setApiKey } from "./adapters/openai.ts";
 import { parseArgs } from "@std/cli/parse-args";
@@ -11,9 +11,12 @@ const VERSION = "0.0.1";
 
 const HOME = Deno.env.get("HOME") || Deno.env.get("USERPROFILE");
 if (!HOME) {
-  throw new Error("HOME environment variable is not set. Please set it to your home directory.");
+  throw new Error(
+    "HOME environment variable is not set. Please set it to your home directory.",
+  );
 }
-const CONFIG_HOME = (Deno.env.get("XDG_CONFIG_HOME") || `${HOME}/.config`) + "/ageage";
+const CONFIG_HOME = (Deno.env.get("XDG_CONFIG_HOME") || `${HOME}/.config`) +
+  "/ageage";
 
 {
   const stat = await Deno.stat(CONFIG_HOME).catch(() => null);
@@ -34,11 +37,13 @@ async function main() {
     string: ["config", "agent"],
   });
 
-  for (const path of [ CONFIG_HOME + "/.env", "./.env" ]) {
+  for (const path of [CONFIG_HOME + "/.env", "./.env"]) {
     try {
       await load({ export: true, envPath: path });
     } catch (error) {
-      console.warn(`Warning: Failed to load environment variables from ${path}: ${error}`);
+      console.warn(
+        `Warning: Failed to load environment variables from ${path}: ${error}`,
+      );
     }
   }
 
@@ -81,7 +86,8 @@ Options:
       return;
     }
 
-    const stream = Deno.stdin.readable.pipeThrough(new TextDecoderStream()).pipeThrough(new TextLineStream());
+    const stream = Deno.stdin.readable.pipeThrough(new TextDecoderStream())
+      .pipeThrough(new TextLineStream());
 
     for await (const line of stream) {
       yield line;

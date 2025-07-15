@@ -19,18 +19,18 @@ export interface Config {
   agents: Record<string, AgentScheme>;
   tools: {
     builtin: {
-      read_file: { description: string; };
-      find: { description: string; };
+      read_file: { description: string };
+      find: { description: string };
       grep: {
         description: string;
         line_limit: number;
       };
       git: {
-        status: { description: string; };
-        add: { description: string; };
-        commit: { description: string; };
-        log: { description: string; };
-        git_diff: { description: string; };
+        status: { description: string };
+        add: { description: string };
+        commit: { description: string };
+        log: { description: string };
+        git_diff: { description: string };
       };
     };
   };
@@ -47,7 +47,7 @@ export interface Config {
 // empty default config; will be loaded from config.default.yaml on startup
 export const config: Config = {
   default_agent: "",
-  agents: { },
+  agents: {},
   tools: {
     builtin: {
       read_file: { description: "" },
@@ -85,7 +85,10 @@ function deepMerge<T>(target: T, source: Partial<T>): T {
     if (!Object.prototype.hasOwnProperty.call(target, key)) {
       target[key] = source[key] as any;
       continue;
-    } else if (source[key] && typeof source[key] === "object" && !Array.isArray(source[key])) {
+    } else if (
+      source[key] && typeof source[key] === "object" &&
+      !Array.isArray(source[key])
+    ) {
       target[key] = deepMerge(target[key] as any, source[key] as any);
     } else {
       target[key] = source[key] as any;
@@ -126,7 +129,9 @@ export async function loadConfig(files: string | string[] = []) {
     if (agent.child_agents) {
       for (const childAgent of agent.child_agents) {
         if (!(childAgent in config.agents)) {
-          console.warn(`Child agent "${childAgent}" not found in config.agents.${agentName}`);
+          console.warn(
+            `Child agent "${childAgent}" not found in config.agents.${agentName}`,
+          );
         }
       }
     }
@@ -134,9 +139,11 @@ export async function loadConfig(files: string | string[] = []) {
     if (agent.tools) {
       const tools = availableTools();
       for (const tool of agent.tools) {
-      if (!(tool in tools)) {
-        console.warn(`Tool "${tool}" not found in available tools for agent "${agentName}"`);
-      }
+        if (!(tool in tools)) {
+          console.warn(
+            `Tool "${tool}" not found in available tools for agent "${agentName}"`,
+          );
+        }
       }
     }
   }

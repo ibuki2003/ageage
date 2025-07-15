@@ -14,7 +14,10 @@ function return_filter_instructions(): string {
   return config.filters.explicit_return.instruction;
 }
 
-export async function return_filter_outlet(output_text: string, _printer: Printer): Promise<string[]> {
+export async function return_filter_outlet(
+  output_text: string,
+  _printer: Printer,
+): Promise<string[]> {
   if (output_text.includes(config.filters.explicit_return.trigger_word)) {
     return [];
   } else {

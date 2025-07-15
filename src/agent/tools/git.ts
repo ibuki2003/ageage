@@ -28,7 +28,9 @@ async function runGitCommand(
   if (!success) {
     const command = commandArgs[0];
     throw new Error(
-      `Error executing git ${command}: ${error}${output ? `\n${output}\n` : ""}`,
+      `Error executing git ${command}: ${error}${
+        output ? `\n${output}\n` : ""
+      }`,
     );
   }
   return output;
@@ -115,8 +117,8 @@ export const git_commit_parameters_schema = {
  * @returns The commit message with the co-author trailer appended if absent.
  */
 function ensureCoAuthorLine(message: string): string {
-  const trailer = 'Co-authored-by: Ageage <ageage@fuwa.dev>';
-  const regex = new RegExp(trailer, 'i');
+  const trailer = "Co-authored-by: Ageage <ageage@fuwa.dev>";
+  const regex = new RegExp(trailer, "i");
   if (regex.test(message)) {
     return message;
   }

@@ -36,7 +36,9 @@ export async function print_delta(
     case "response.reasoning.delta":
     case "response.reasoning_summary.delta":
     case "response.reasoning_summary_text.delta": {
-      const content = typeof chunk.delta === "string" ? chunk.delta : JSON.stringify(chunk.delta);
+      const content = typeof chunk.delta === "string"
+        ? chunk.delta
+        : JSON.stringify(chunk.delta);
       await printer.write(content, reasoning_color);
       break;
     }
@@ -55,4 +57,3 @@ export function get_output_text(response: OpenAI.Responses.Response): string {
     o.content.filter((c) => c.type == "output_text")
   ).map((c) => c.text).join("\n");
 }
-

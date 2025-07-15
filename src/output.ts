@@ -36,7 +36,7 @@ class Printer {
       }
 
       const line = lines[i];
-      const nl = i < lines.length - 1 ? '\n' : "";
+      const nl = i < lines.length - 1 ? "\n" : "";
       this.in_line = false; // reset in_line for the next line
       await Deno.stdout.write(enc.encode(color(line + nl)));
     }
