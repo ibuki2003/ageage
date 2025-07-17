@@ -79,7 +79,7 @@ async function print(msg: string) {
   // move cursor up, clear line, content, move cursor down, render prompt
   const seq =
     `\x1b[1F\x1b[2K${buf2}\n${readline.getPrompt()}${readline.line}\x1b[${
-      readline.cursor + 3
+      readline.cursor + readline.getPrompt().length
     }G`;
 
   await Deno.stdout.write(enc.encode(seq));
