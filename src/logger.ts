@@ -10,7 +10,7 @@ export function setupLogger() {
   log.setup({
     handlers: {
       file: new log.FileHandler("DEBUG", {
-        filename: "app.log",
+        filename: ".ageage.log",
         formatter: (record) =>
           `[${record.levelName}] ${record.msg} ${formatArgs(record.args)}`,
       }),
