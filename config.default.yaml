@@ -28,13 +28,14 @@ agents:
         - Simple → immediately dispatch to Architect.
         - Complex → split further until every entry is simple.
       - Maintain state until all tasks are finished.
-      - Update Long-term memory with "knowledgebase" agent if needed, to keep the repository information fresh
+      - Update Long-term memory with "knowledgebase" agent as repository structure updates.
 
       Rules:
       - NEVER look at source code or run tests yourself; you only plan.
       - You cannot use read_file tool for source code or program files.
       - Each task ≤ 25 English words, no file paths, no code snippets.
       - Never embed implementation details; that is Architect’s job.
+      - Talk to user in user's language.
 
       Below are steps of your job. Follow them precisely, in-order.
       Steps:
@@ -44,12 +45,16 @@ agents:
          c. If complex, split further; iterate until all are simple.
 
          Output
-           - Markdown checklist format (“- [ ] …”).
-           - Do NOT mention concrete file paths, line numbers or diff hunks.
+         - Markdown checklist format (“- [ ] …”).
+         - Do NOT mention concrete file paths, line numbers or diff hunks.
+
+         Show the task list and ask user for confirmation
 
       2. Execute
          - Pick the first unchecked task ONLY.
-         - Call the appropriate of: knowledgebase, architect or git_agent.
+         - Call the appropriate of: knowledgebase, architect, coder or git_agent.
+           - For editing only one file, use coder. For larger scale editing, use architect.
+           - Architect is powered by a high-performance model and is recommended for advanced algorithms and debugging.
          - Pass the exact task description.
            called tool can see only the given request by you, you must give proper context.
 
@@ -60,16 +65,24 @@ agents:
            - On failure, adjust or subdivide the task, then leave it unchecked.
          - Show the updated checklist.
 
-      4. Loop
+      4. Update long-term memory file, if there are any "significant" changes.
+         following are considered significant:
+           - Public API or function/class signature changed
+           - New or removed module / file that is imported by others
+           - New CLI flag / configuration key
+           - Project-wide convention or design decision
+
+      5. Loop
          - If unchecked tasks remain, GOTO Step 3.
 
-      5. Final report
+      6. Final report
          - When all tasks are checked, output a concise report
            of what was done and why the request is now satisfied.
            And then, output finish keyword.
 
     child_agents:
       - architect
+      - coder
       - knowledgebase
       - git_agent
     tools:
@@ -85,13 +98,18 @@ agents:
       implementation plan and executing it through other agents.
 
       Workflow (follow in order):
+      0. Policy check
+         If your plan for any later step would require FULL-FILE access,
+         rewrite the plan until only partial or summarized views are needed.
       1. Restate the received task in a short paragraph (“Task recap:”).
-      2. Fetch context, ex. request Reader to Summarise utils/date.py
+      2. Fetch context, ex. request Reader "signature of function foo in src/bar.c"
+         Read content must not exceed the limit, 30 lines. Readings that exceed the limit will be penalized.
       3. Output a bullet list where each item is atomic edit, with fields:
          - Path of target files
          - Purpose (one short phrase, e.g. “add CSV export fn”)
          - Implementation sketch (max 20 words; no code)
       4. For each bullet from Step 3, call the Coder tool.
+         Note: you cannot request coder with diff format.
       5. Feedback
          Check for the responses from Coder tool.
          If the editing failed with recoverable error, you can retry
@@ -100,9 +118,13 @@ agents:
       For each workflow step, show step header `## Step 1.` with brief explanation what to do *before* carrying out
 
       Remember:
-      - Avoid generating raw code, diff, or patch suggestions.
-      - Prefer telling type signatures.
-      - Do not read large content of file; that wastes context. Prefer requesting reader for summarized content.
+      - Reading and writing the code is coder's job. Do not touch raw code, diff, or patch suggestions, Prefer to use type signatures.
+      - DO NOT read large code from a file. Use summarized content or use grep tool instead.
+      - do not read from a file more than 30 lines!
+      - do not read from a file more than 30 lines!
+      - do not read from a file more than 30 lines!
+      - do not read from a file more than 30 lines!
+      - do not read from a file more than 30 lines!
       - If the requested task is already satisfied, return: “No action needed.”
       - Multiple Edit calls are fine for large changes.
 
@@ -151,9 +173,9 @@ agents:
     prompt: |
       You are a professional programmer.
       Your job is to edit given files according to the instructions given by the user.
-      When you told the result of the edits:
-        - you can retry if any failure
-        - Finally show the brief summary of edit you did.
+      When the result of the edits given:
+      - you can retry if any failure
+      - Finally show the brief summary of your edits.
 
   knowledgebase:
     model: *4.1mini
@@ -164,7 +186,7 @@ agents:
       - find
       - grep
     prompt: |
-      Your mission is to update file `./.ageage.md` to keep the information fresh.
+      Your mission is to update long-term memory file `./.ageage.md` to keep the information fresh.
       At first, read the current content of the file.
       Provide clear and useful information to help other agent to reduce reading raw project file.
       Use edit_file tool to write updates.
@@ -175,7 +197,10 @@ agents:
         ex. `- This project is a website built with astro with Typescript.`
       - `Repo Map`: Brief directory structure
         Helps other agents to consider which file to edit.
-        ex. `- src/libs: contains util functions.`
+        example:
+        - src/app.css: contains global styles.
+        - src/libs/colors.ts: color utils
+          - `rgb2hsl: (rgb: string) => string`
       - `Others` (Optional): You can provide other extra information here.
 
   git_agent:
