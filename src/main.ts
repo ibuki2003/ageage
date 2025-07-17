@@ -6,6 +6,8 @@ import { load } from "@std/dotenv";
 import { setApiKey } from "./adapters/openai.ts";
 import { parseArgs } from "@std/cli/parse-args";
 
+import { toArrayBuffer } from "@std/streams/to-array-buffer";
+
 const VERSION = "0.0.1";
 
 const HOME = Deno.env.get("HOME") || Deno.env.get("USERPROFILE");
@@ -70,10 +72,17 @@ Options:
     Deno.exit(0);
   }
 
-  const input_text_arg = args._.join(" ").trim();
+  let input_text_arg = args._.join(" ").trim();
   if (!is_tty && !input_text_arg) {
-    console.error("No input provided");
-    Deno.exit(1);
+    const input = new TextDecoder().decode(
+      await toArrayBuffer(Deno.stdin.readable),
+    ).trim();
+    if (!input) {
+      console.error("No input provided");
+      Deno.exit(1);
+    } else {
+      input_text_arg = input;
+    }
   }
 
   const stdin_reader = async function* () {
