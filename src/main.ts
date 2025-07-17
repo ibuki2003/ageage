@@ -1,8 +1,7 @@
 import { runAgent } from "./agent/index.ts";
 import { config, loadConfig } from "./config.ts";
 import { setupLogger } from "./logger.ts";
-import Printer from "./output.ts";
-import { TextLineStream } from "@std/streams";
+import { is_tty, Printer, readline } from "./terminal.ts";
 import { load } from "@std/dotenv";
 import { setApiKey } from "./adapters/openai.ts";
 import { parseArgs } from "@std/cli/parse-args";
@@ -71,7 +70,6 @@ Options:
     Deno.exit(0);
   }
 
-  const is_tty = Deno.stdin.isTerminal();
   const input_text_arg = args._.join(" ").trim();
   if (!is_tty && !input_text_arg) {
     console.error("No input provided");
@@ -82,19 +80,18 @@ Options:
     if (input_text_arg) {
       yield input_text_arg;
     }
-    if (!is_tty) {
+    if (!readline) {
       return;
     }
 
-    const stream = Deno.stdin.readable.pipeThrough(new TextDecoderStream())
-      .pipeThrough(new TextLineStream());
-
-    for await (const line of stream) {
+    for await (const line of readline) {
       yield line;
     }
   }();
 
   const printer = new Printer(0);
+
+  readline?.prompt();
 
   if (args.agent && !(args.agent in config.agents)) {
     console.error(`Error: Agent "${args.agent}" not found in config.`);

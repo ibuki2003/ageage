@@ -1,4 +1,4 @@
-import Printer from "../output.ts";
+import { Printer } from "../terminal.ts";
 import edit_file from "./edit_file.ts";
 import explicit_return from "./explicit_return.ts";
 

@@ -1,5 +1,5 @@
 import { OpenAI } from "@openai/openai";
-import Printer from "../output.ts";
+import { Printer } from "../terminal.ts";
 import { Crayon, crayon } from "crayon";
 
 export const client = new OpenAI({ apiKey: "" });

@@ -1,4 +1,4 @@
-import Printer from "../../output.ts";
+import { Printer } from "../../terminal.ts";
 import find from "./find.ts";
 import grep from "./grep.ts";
 import read_file from "./read_file.ts";

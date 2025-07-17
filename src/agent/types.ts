@@ -1,5 +1,5 @@
 import { ModelSpec } from "../config.ts";
-import Printer from "../output.ts";
+import { Printer } from "../terminal.ts";
 
 export interface AgentScheme {
   model: ModelSpec;

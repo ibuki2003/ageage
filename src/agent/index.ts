@@ -1,6 +1,6 @@
 import { crayon } from "crayon";
 import { config } from "../config.ts";
-import Printer from "../output.ts";
+import { Printer } from "../terminal.ts";
 import { adapter_openai } from "./openai.ts";
 import { availableTools } from "./tools/index.ts";
 import { AgentScheme } from "./types.ts";

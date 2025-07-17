@@ -2,7 +2,7 @@
 
 import { config } from "../config.ts";
 import * as log from "@std/log";
-import Printer from "../output.ts";
+import { Printer } from "../terminal.ts";
 import { crayon } from "crayon";
 import { Filter } from "./index.ts";
 

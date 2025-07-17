@@ -1,7 +1,7 @@
 /// builtin output parser: explicit_return
 
 import { config } from "../config.ts";
-import Printer from "../output.ts";
+import { Printer } from "../terminal.ts";
 import { Filter } from "./index.ts";
 
 export type ExplicitReturnFilterConfig = {
