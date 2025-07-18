@@ -27,7 +27,7 @@ export const read_file_parameters_schema = {
 export async function read_file_call(args: string): Promise<string> {
   try {
     const { file_path, range, line_numbers } = JSON.parse(args);
-    if (typeof file_path !== "string" || !file_path.startsWith("./")) {
+    if (typeof file_path !== "string" || file_path.startsWith("/")) {
       return "Error: file_path must be a string starting with './'.";
     }
     let lines = (await Deno.readTextFile(file_path)).split("\n");
