@@ -104,7 +104,7 @@ export const git_commit_parameters_schema = {
   properties: {
     message: {
       type: "string",
-      description: "Commit message for git commit.",
+      description: "Commit message for git commit. If empty, a message will be generated automatically.",
     },
   },
   required: ["message"],
