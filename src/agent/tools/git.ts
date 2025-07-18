@@ -2,6 +2,7 @@
 
 import { ToolDefinition } from "./index.ts";
 import { config } from "../../config.ts";
+import { client, get_output_text } from "../../adapters/openai.ts";
 
 /**
  * Run a git command with the given arguments and options.
@@ -128,12 +129,29 @@ function ensureCoAuthorLine(message: string): string {
 export async function git_commit_call(args: string): Promise<string> {
   /**
    * Execute 'git commit -m <message>' using the runGitCommand helper.
-   * @param args - JSON string with { message: string }.
-   * @returns Decoded stdout string.
+   * If message is empty, auto-generate using OpenAI.
    */
-  const { message } = JSON.parse(args);
-  if (typeof message !== "string" || !message) {
-    throw new Error("Invalid message: expected non-empty string.");
+  const { message: origMessage } = JSON.parse(args);
+  let message = origMessage;
+  if (typeof message !== "string" || message.trim() === "") {
+    try {
+      const diff = await runGitCommand(["diff", "--cached"], {});
+      const template = config.tools.builtin.git.commit.prompt_template;
+      const prompt = template.replace('{diff}', diff);
+      const completion = await client.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: prompt }],
+      });
+      const generated = get_output_text(completion)?.trim()
+        || (completion.choices?.[0]?.message?.content ?? '').trim();
+      message = generated.length
+        ? generated
+        : 'chore: update code';
+      console.log(`Auto-generated commit message: ${message}`);
+    } catch (e) {
+      message = 'chore: update code';
+      console.error(`Failed to auto-generate commit message, using fallback: ${message}`, e);
+    }
   }
   const processedMessage = ensureCoAuthorLine(message);
   const stdout = await runGitCommand(["commit", "-m", processedMessage], {});

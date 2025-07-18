@@ -28,7 +28,7 @@ export interface Config {
       git: {
         status: { description: string };
         add: { description: string };
-        commit: { description: string };
+        commit: { description: string; prompt_template: string };
         log: { description: string };
         git_diff: { description: string };
       };
@@ -56,7 +56,7 @@ export const config: Config = {
       git: {
         status: { description: "" },
         add: { description: "" },
-        commit: { description: "" },
+        commit: { description: "", prompt_template: "" },
         log: { description: "" },
         git_diff: { description: "" },
       },
