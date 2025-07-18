@@ -14,8 +14,10 @@ export interface AgentScheme {
 export type ToolCall = (tool: string, args: string) => Promise<string>;
 
 export type runCompletions = (
+  is_top_level: boolean,
   agent_scheme: AgentScheme,
-  input: string | AsyncGenerator<string>,
+  first_input: string,
+  input: (waitIfEmpty: boolean) => Promise<string | null>,
   tool_callback: ToolCall,
   printer: Printer,
 ) => Promise<string>;

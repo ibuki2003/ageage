@@ -65,8 +65,10 @@ function getToolsScheme(scheme: AgentScheme): OpenAI.Responses.FunctionTool[] {
 }
 
 export const adapter_openai: runCompletions = async (
+  is_top_level,
   agent_scheme,
-  input,
+  first_input,
+  user_input,
   tool_callback,
   printer,
 ) => {
@@ -81,17 +83,11 @@ export const adapter_openai: runCompletions = async (
 
   log.debug(`Using tools: ${tools.map((t) => t.name).join(", ")}`);
 
-  const first_input = typeof input === "string" ? input : await (async () => {
-    const l = await input.next();
-    if (l.done) return null;
-    return l.value;
-  })();
   if (!first_input) {
     // throw new Error("No input provided to the agent");
     log.warn("No input provided to the agent");
     return "";
   }
-  const input_iter = typeof input === "string" ? null : input;
 
   let reqinput: OpenAI.Responses.ResponseInput = [
     { role: "user", type: "message", content: first_input },
@@ -171,21 +167,25 @@ export const adapter_openai: runCompletions = async (
 
     // Add user input if available
     // if other input is provided, we can skip waiting for user input
-    if (reqinput.length == 0 && input_iter) {
-      await printer.write("Waiting for user input...\n", crayon.white.dim);
-      const user_input = await input_iter?.next();
-      if (user_input.done) {
+    const wait = is_top_level && reqinput.length === 0;
+    do {
+      if (wait) {
+        await printer.write("Waiting for user input...\n", crayon.white.dim);
+      }
+      const inp = await user_input(wait); // skip if empty for non-top-level agents
+      if (inp === null && wait) {
         await printer.write("Quitting...\n", crayon.white.dim);
         return get_output_text(response);
       }
-      const inp = user_input.value;
-      log.debug("User input received:", inp);
-      reqinput.push({
-        type: "message",
-        role: "user",
-        content: inp,
-      });
-    }
+      if (inp) {
+        log.debug("User input received:", inp);
+        reqinput.push({
+          type: "message",
+          role: "user",
+          content: inp,
+        });
+      }
+    } while (is_top_level && reqinput.length === 0);
 
     if (reqinput.length === 0) {
       // finally, print a separator line

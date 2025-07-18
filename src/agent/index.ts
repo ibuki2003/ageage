@@ -7,21 +7,28 @@ import { AgentScheme } from "./types.ts";
 import * as log from "@std/log";
 
 export async function runAgent(
+  is_top_level: boolean,
   scheme: AgentScheme,
-  input: string | AsyncGenerator<string>,
+  first_input: string,
+  user_input: (waitIfEmpty: boolean) => Promise<string | null>,
   printer: Printer,
 ): Promise<string> {
-  if (typeof input === "string") {
-    log.debug(`Running agent with input: ${input}`);
-  } else {
-    log.debug(`Running agent with input from stdin`);
+
+  if (is_top_level && first_input === "") {
+    const inp = await user_input(true);
+    if (inp === null) {
+      throw new Error("No input provided");
+    }
+    first_input = inp;
   }
 
   return await adapter_openai(
+    is_top_level,
     scheme,
-    input,
+    first_input,
+    user_input,
     async (tool, args) => {
-      const res = await routeToolCall(tool, args, await printer.get_deep());
+      const res = await routeToolCall(tool, args, user_input, await printer.get_deep());
       await printer.write("\n");
       return res;
     },
@@ -33,6 +40,7 @@ export async function runAgent(
 const routeToolCall = async (
   tool: string,
   args: string,
+  user_input: (waitIfEmpty: boolean) => Promise<string | null>,
   printer: Printer,
 ): Promise<string> => {
   log.debug(`Routing tool call: ${tool} with args: ${args}`);
@@ -68,8 +76,10 @@ const routeToolCall = async (
 
     const agentScheme = config.agents[tool];
     return await runAgent(
+      false,
       agentScheme,
       request,
+      user_input,
       printer,
     );
   }

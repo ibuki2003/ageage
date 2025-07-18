@@ -7,6 +7,7 @@ import { setApiKey } from "./adapters/openai.ts";
 import { parseArgs } from "@std/cli/parse-args";
 
 import { toArrayBuffer } from "@std/streams/to-array-buffer";
+import { crayon } from "crayon";
 
 const VERSION = "0.0.1";
 
@@ -85,22 +86,56 @@ Options:
     }
   }
 
-  const stdin_reader = async function* () {
-    if (input_text_arg) {
-      yield input_text_arg;
-    }
-    if (!readline) {
-      return;
-    }
-
-    for await (const line of readline) {
-      yield line;
-    }
-  }();
-
   const printer = new Printer(0);
 
   readline?.prompt();
+
+
+  // buffer not from readline, consumed first
+  const input_queue: string[] = [];
+
+  if (input_text_arg) {
+    input_queue.push(input_text_arg);
+  }
+
+  let closed = false;
+  const stdin_reader = async (waitIfEmpty = false): Promise<string | null> => {
+    if (input_queue.length > 0) {
+      return input_queue.shift() || null;
+    }
+
+    if (!readline) {
+      return null; // No readline available
+    }
+    if (!waitIfEmpty && readline.line === "") {
+      return null; // No input available
+    }
+    return await new Promise((resolve) => {
+      if (closed) {
+        resolve(null); // Already closed
+      }
+
+      if (readline === null) {
+        resolve(null); // No readline available
+      } else {
+        if (!waitIfEmpty && readline.line !== "") {
+          printer.write("paused. waiting for input...\n", crayon.white.dim);
+        }
+        const res = (line: string) => {
+          readline?.removeListener("close", cancel);
+          resolve(line);
+        }
+        const cancel = () => {
+          closed = true;
+          readline?.removeListener("line", res);
+          resolve(null);
+        }
+        readline.once("line", res);
+        readline.once("close", cancel);
+      }
+    });
+  };
+
 
   if (args.agent && !(args.agent in config.agents)) {
     console.error(`Error: Agent "${args.agent}" not found in config.`);
@@ -109,7 +144,7 @@ Options:
   }
   const agent = config.agents[args.agent || config.default_agent];
 
-  await runAgent(agent, stdin_reader, printer);
+  await runAgent(true, agent, "", stdin_reader, printer);
 }
 
 // Handle SIGINT (Ctrl+C)
