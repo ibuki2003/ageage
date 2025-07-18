@@ -139,10 +139,13 @@ export async function git_commit_call(args: string): Promise<string> {
     const diff = await runGitCommand(["diff", "--cached"], {});
     const template = config.tools.builtin.git.commit.prompt_template;
     const prompt = template.replace('{diff}', diff);
+    const commitConfig = config.tools.builtin.git.commit;
+
+    const modelId = commitConfig.model.model_id;
     let generated: string;
     try {
       const response = await client.responses.create({
-        model: 'gpt-3.5-turbo',
+        model: modelId,
         input: [
           {
             role: 'user',

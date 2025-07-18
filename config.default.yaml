@@ -256,6 +256,7 @@ tools:
           {diff}
           
           Commit message:
+        model: *4.1mini
       log:
         description: "Show commit logs"
       git_diff:

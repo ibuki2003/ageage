@@ -28,7 +28,7 @@ export interface Config {
       git: {
         status: { description: string };
         add: { description: string };
-        commit: { description: string; prompt_template: string };
+        commit: { description: string; prompt_template: string; model?: ModelSpec };
         log: { description: string };
         git_diff: { description: string };
       };
@@ -146,5 +146,9 @@ export async function loadConfig(files: string | string[] = []) {
         }
       }
     }
+  }
+  // Ensure git commit tool model is configured
+  if (!config.tools.builtin.git.commit.model?.model_id) {
+    throw new Error("Configuration error: tools.builtin.git.commit.model.model_id is required");
   }
 }
