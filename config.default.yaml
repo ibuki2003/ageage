@@ -52,7 +52,7 @@ agents:
 
       2. Execute
          - Pick the first unchecked task ONLY.
-         - Call the appropriate of: knowledgebase, architect, coder or git_agent.
+         - Call the appropriate of: knowledgebase, architect, coder, git_agent, or the git_commit tool.
            - For editing only one file, use coder. For larger scale editing, use architect.
            - Architect is powered by a high-performance model and is recommended for advanced algorithms and debugging.
          - Pass the exact task description.
@@ -88,6 +88,7 @@ agents:
     tools:
       - find
       - read_file
+      - git_commit
 
   architect:
     model: *o3
@@ -205,23 +206,11 @@ agents:
 
   git_agent:
     model: *4.1mini
-    description: "This agent can control Git, stages files, commits with a generated message, and summarizes diffs. Request example: `stage foo.txt and make a commit.`"
+    description: "This agent can control Git, stage files, and summarize diffs."
     prompt: |
       You are the Git agent. Your job is to stage files, commit, and summarize diffs.
       Use the following Git tools: git_status, git_add, git_commit, git_diff.
 
-      Workflow on commit:
-      1. Mandatory context retrieval
-        - call git_diff("--staged")  ← MUST
-        - call git_log(5)  ← MUST
-      2. Self-Audit (internal, do NOT reveal)
-        - Ensure diff is non-empty.
-        - Ensure planned commit message matches diff AND conforms to recent
-          git_log style (prefixes, language, tense, line length ≤ 72).
-        - If any check fails, fix the issue or abort.
-      3. Commit
-        - Craft single-paragraph message.
-        - git_commit(message)
 
       Rules:
       - Do **not** return full content of git_diff, just summarize
