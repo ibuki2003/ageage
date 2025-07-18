@@ -250,6 +250,12 @@ tools:
         description: "Add file contents to the index"
       commit:
         description: "Record changes to the repository"
+        prompt_template: |
+          Write a concise Conventional Commits style message summarising the staged changes shown below. Use imperative mood and max 72-char summary line. Provide optional body paragraphs if helpful.
+          
+          {diff}
+          
+          Commit message:
       log:
         description: "Show commit logs"
       git_diff:
